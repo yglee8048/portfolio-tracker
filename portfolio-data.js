@@ -16,7 +16,9 @@ const GLOBAL_TARGETS = {
     'ACE KRX금현물': 9,
     'TIGER 차이나항셍테크': 4,
     'KODEX 선진국MSCI World': 3,
-    'TIGER 글로벌자원생산기업INDXX(합성H)': 1
+    'TIGER 글로벌자원생산기업INDXX(합성H)': 1,
+    'TIGER CD금리투자KIS': 0,
+    'RISE CD금리액티브': 0,
 };
 
 // ---------------------------------------------------------------
@@ -29,7 +31,7 @@ const ETF_SHORT = {
     'KODEX 미국나스닥100': '나스닥100',
     'KODEX 미국S&P500': 'S&P500',
     'PLUS 신흥국MSCI(합성H)': 'PLUS신흥국',
-    'KODEX 선진국MSCI World': 'KODEX선진국',
+    'KODEX MSCI선진국': 'KODEX선진국',
     'ACE KRX금현물': 'KRX금',
     'TIGER 차이나항셍테크': '항셍테크',
     'TIGER 글로벌자원생산기업INDXX(합성H)': '자원생산기업',
@@ -60,39 +62,10 @@ const ACCOUNTS = [
         irpSafetyRequired: false,
         irpSafetyEtfs: [],
         holdings: [
-            {etf: 'TIGER 미국배당 다우존스', targetPct: 40, defaultAmt: 230, safe: false},
-            {etf: 'KODEX CD금리액티브', targetPct: 25, defaultAmt: 7205, safe: true},
-            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 20, defaultAmt: 112, safe: true},
-            {etf: 'ACE KRX금현물', targetPct: 15, defaultAmt: 114, safe: false}
-        ]
-    },
-    {
-        id: 'irp-retire',
-        label: 'IRP 퇴직연금',
-        showSafeCol: true,
-        irpSafetyRequired: true,
-        irpSafetyEtfs: ['KODEX 종합채권(AA-이상)', 'KODEX CD금리액티브'],
-        holdings: [
-            {etf: 'KODEX 미국나스닥100', targetPct: 50, defaultAmt: 189, safe: false},
-            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 15, defaultAmt: 56, safe: false},
-            {etf: 'TIGER 차이나항셍테크', targetPct: 5, defaultAmt: 18, safe: false},
-            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, defaultAmt: 112, safe: true},
-            {etf: 'KODEX CD금리액티브', targetPct: 0, defaultAmt: 3334, safe: true}
-        ]
-    },
-    {
-        id: 'irp-personal',
-        label: 'IRP 개인연금',
-        showSafeCol: true,
-        irpSafetyRequired: true,
-        irpSafetyEtfs: ['KODEX 종합채권(AA-이상)', 'KODEX CD금리액티브'],
-        holdings: [
-            {etf: 'KODEX 선진국MSCI World', targetPct: 40, defaultAmt: 44, safe: false},
-            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 30, defaultAmt: 34, safe: false},
-            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, defaultAmt: 34, safe: true},
-            {etf: 'KODEX CD금리액티브', targetPct: 0, defaultAmt: 323, safe: true},
-            {etf: 'TIGER CD금리투자KIS', targetPct: 0, defaultAmt: 304, safe: true},
-            {etf: 'RISE CD금리액티브', targetPct: 0, defaultAmt: 393, safe: true},
+            {etf: 'TIGER 미국배당 다우존스', targetPct: 40, defaultAmt: 230, defaultCost: 230, safe: false},
+            {etf: 'KODEX CD금리액티브', targetPct: 25, defaultAmt: 7205, defaultCost: 7195, safe: true},
+            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 20, defaultAmt: 112, defaultCost: 112, safe: true},
+            {etf: 'ACE KRX금현물', targetPct: 15, defaultAmt: 114, defaultCost: 114, safe: false}
         ]
     },
     {
@@ -102,10 +75,10 @@ const ACCOUNTS = [
         irpSafetyRequired: false,
         irpSafetyEtfs: [],
         holdings: [
-            {etf: 'KODEX 미국S&P500', targetPct: 50, defaultAmt: 115, safe: false},
-            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 30, defaultAmt: 68, safe: false},
-            {etf: 'TIGER 차이나항셍테크', targetPct: 20, defaultAmt: 45, safe: false},
-            {etf: 'KODEX CD금리액티브', targetPct: 0, defaultAmt: 2062, safe: true}
+            {etf: 'KODEX 미국S&P500', targetPct: 50, defaultAmt: 115, defaultCost: 115, safe: false},
+            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 30, defaultAmt: 68, defaultCost: 68, safe: false},
+            {etf: 'TIGER 차이나항셍테크', targetPct: 20, defaultAmt: 45, defaultCost: 46, safe: false},
+            {etf: 'TIGER CD금리투자KIS', targetPct: 0, defaultAmt: 2062, defaultCost: 2060, safe: true}
         ]
     },
     {
@@ -115,12 +88,41 @@ const ACCOUNTS = [
         irpSafetyRequired: false,
         irpSafetyEtfs: [],
         holdings: [
-            {etf: 'KODEX 미국S&P500', targetPct: 30, defaultAmt: 74, safe: false},
-            {etf: 'TIGER 미국배당 다우존스', targetPct: 15, defaultAmt: 37, safe: false},
-            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 20, defaultAmt: 45, safe: true},
-            {etf: 'KODEX CD금리액티브', targetPct: 5, defaultAmt: 2262, safe: true},
-            {etf: 'ACE KRX금현물', targetPct: 15, defaultAmt: 37, safe: false},
-            {etf: 'TIGER 글로벌자원생산기업INDXX(합성H)', targetPct: 15, defaultAmt: 35, safe: false}
+            {etf: 'KODEX 미국S&P500', targetPct: 30, defaultAmt: 74, defaultCost: 74, safe: false},
+            {etf: 'TIGER 미국배당 다우존스', targetPct: 15, defaultAmt: 37, defaultCost: 37, safe: false},
+            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 20, defaultAmt: 45, defaultCost: 45, safe: true},
+            {etf: 'TIGER CD금리투자KIS', targetPct: 5, defaultAmt: 2262, defaultCost: 2260, safe: true},
+            {etf: 'ACE KRX금현물', targetPct: 15, defaultAmt: 37, defaultCost: 37, safe: false},
+            {etf: 'TIGER 글로벌자원생산기업INDXX(합성H)', targetPct: 15, defaultAmt: 35, defaultCost: 35, safe: false}
         ]
-    }
+    },
+    {
+        id: 'irp-retire',
+        label: 'IRP 퇴직연금',
+        showSafeCol: true,
+        irpSafetyRequired: true,
+        irpSafetyEtfs: ['KODEX 종합채권(AA-이상)', 'KODEX CD금리액티브'],
+        holdings: [
+            {etf: 'KODEX 미국나스닥100', targetPct: 50, defaultAmt: 189, defaultCost: 189, safe: false},
+            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 15, defaultAmt: 56, defaultCost: 56, safe: false},
+            {etf: 'TIGER 차이나항셍테크', targetPct: 5, defaultAmt: 18, defaultCost: 19, safe: false},
+            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, defaultAmt: 112, defaultCost: 112, safe: true},
+            {etf: 'KODEX CD금리액티브', targetPct: 0, defaultAmt: 3334, defaultCost: 3331, safe: true}
+        ]
+    },
+    {
+        id: 'irp-personal',
+        label: 'IRP 개인연금',
+        showSafeCol: true,
+        irpSafetyRequired: true,
+        irpSafetyEtfs: ['KODEX 종합채권(AA-이상)', 'KODEX CD금리액티브'],
+        holdings: [
+            {etf: 'KODEX MSCI선진국', targetPct: 40, defaultAmt: 44, defaultCost: 44, safe: false},
+            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 30, defaultAmt: 34, defaultCost: 34, safe: false},
+            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, defaultAmt: 34, defaultCost: 34, safe: true},
+            {etf: 'KODEX CD금리액티브', targetPct: 0, defaultAmt: 323, defaultCost: 323, safe: true},
+            {etf: 'TIGER CD금리투자KIS', targetPct: 0, defaultAmt: 304, defaultCost: 303, safe: true},
+            {etf: 'RISE CD금리액티브', targetPct: 0, defaultAmt: 393, defaultCost: 392, safe: true},
+        ]
+    },
 ];

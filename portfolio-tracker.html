@@ -414,6 +414,22 @@ td {
   transition: color 0.15s;
 }
 
+/* STACKED INPUT (현재가 + 원금) */
+.input-stack { display: flex; flex-direction: column; gap: 3px; }
+.input-row { display: flex; align-items: center; gap: 5px; }
+.input-label { font-size: 10px; color: var(--text-muted); min-width: 26px; flex-shrink: 0; }
+.return-chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+.return-pos { color: var(--green); background: var(--green-bg); }
+.return-neg { color: var(--red); background: var(--red-bg); }
+.return-zero { color: var(--text-muted); }
+
 /* ACTION CHIP */
 .action-chip {
   display: inline-flex;
@@ -785,6 +801,7 @@ td.cell-red { color: var(--red); }
             <th class="right">현재</th>
             <th class="right">차이</th>
             <th class="right">금액 합계</th>
+            <th class="right">수익률</th>
             <th>상태</th>
           </tr>
         </thead>
@@ -796,6 +813,7 @@ td.cell-red { color: var(--red); }
             <td class="pct-cell" id="summary-total-pct">—</td>
             <td></td>
             <td class="pct-cell" id="summary-total-amt">—</td>
+            <td class="pct-cell" id="summary-total-return">—</td>
             <td></td>
           </tr>
         </tfoot>
@@ -898,7 +916,8 @@ td.cell-red { color: var(--red); }
           <tr>
             <th>ETF</th>
             <th class="right">목표 비율</th>
-            <th class="right">현재 금액</th>
+            <th class="right">현재가 / 원금</th>
+            <th class="right">수익률</th>
             <th class="right">현재 비율</th>
             <th class="right">차이</th>
             <th>조정 액션</th>
@@ -907,6 +926,7 @@ td.cell-red { color: var(--red); }
         <tbody id="isa-tbody"></tbody>
       </table>
       <div class="ratio-row" id="isa-ratio-row"></div>
+
     </div>
   </div>
 
@@ -937,7 +957,8 @@ td.cell-red { color: var(--red); }
             <th>ETF</th>
             <th>분류</th>
             <th class="right">목표 비율</th>
-            <th class="right">현재 금액</th>
+            <th class="right">현재가 / 원금</th>
+            <th class="right">수익률</th>
             <th class="right">현재 비율</th>
             <th class="right">차이</th>
             <th>조정 액션</th>
@@ -976,7 +997,8 @@ td.cell-red { color: var(--red); }
             <th>ETF</th>
             <th>분류</th>
             <th class="right">목표 비율</th>
-            <th class="right">현재 금액</th>
+            <th class="right">현재가 / 원금</th>
+            <th class="right">수익률</th>
             <th class="right">현재 비율</th>
             <th class="right">차이</th>
             <th>조정 액션</th>
@@ -1013,7 +1035,8 @@ td.cell-red { color: var(--red); }
           <tr>
             <th>ETF</th>
             <th class="right">목표 비율</th>
-            <th class="right">현재 금액</th>
+            <th class="right">현재가 / 원금</th>
+            <th class="right">수익률</th>
             <th class="right">현재 비율</th>
             <th class="right">차이</th>
             <th>조정 액션</th>
@@ -1050,7 +1073,8 @@ td.cell-red { color: var(--red); }
           <tr>
             <th>ETF</th>
             <th class="right">목표 비율</th>
-            <th class="right">현재 금액</th>
+            <th class="right">현재가 / 원금</th>
+            <th class="right">수익률</th>
             <th class="right">현재 비율</th>
             <th class="right">차이</th>
             <th>조정 액션</th>
@@ -1594,10 +1618,13 @@ td.cell-red { color: var(--red); }
 <script>
 // STATE: current amounts indexed by accountId -> etfName
 const state = {};
+const costState = {};
 ACCOUNTS.forEach(acc => {
   state[acc.id] = {};
+  costState[acc.id] = {};
   acc.holdings.forEach(h => {
     state[acc.id][h.etf] = h.defaultAmt;
+    costState[acc.id][h.etf] = h.defaultCost || 0;
   });
 });
 
@@ -1668,10 +1695,16 @@ function renderAccount(accId) {
 
   acc.holdings.forEach(h => {
     const current = state[accId][h.etf] || 0;
+    const cost = costState[accId][h.etf] || 0;
     const currentPct = total > 0 ? (current / total * 100) : 0;
     const diff = currentPct - h.targetPct;
     const rowCls = rowHighlight(diff);
     if (h.safe) safeTotal += currentPct;
+
+    const returnRate = cost > 0 ? (current - cost) / cost * 100 : null;
+    const returnHtml = returnRate === null
+      ? `<span class="return-zero">—</span>`
+      : `<span class="return-chip ${returnRate > 0 ? 'return-pos' : returnRate < 0 ? 'return-neg' : 'return-zero'}">${returnRate >= 0 ? '+' : ''}${returnRate.toFixed(1)}%</span>`;
 
     const safeCol = acc.showSafeCol
       ? `<td><span class="risk-label ${h.safe ? 'risk-safe' : 'risk-risk'}">${h.safe ? '안전' : '위험'}</span></td>`
@@ -1685,14 +1718,30 @@ function renderAccount(accId) {
       ${safeCol}
       <td class="pct-cell">${fmtPct(h.targetPct)}</td>
       <td>
-        <div class="amount-input-wrap">
-          <input class="amount-input" type="number" min="0" step="1"
-            value="${current}"
-            data-acc="${accId}" data-etf="${h.etf}"
-            onchange="updateState(this)" oninput="updateState(this)">
-          <span class="input-suffix">만원</span>
+        <div class="input-stack">
+          <div class="input-row">
+            <span class="input-label">현재가</span>
+            <div class="amount-input-wrap">
+              <input class="amount-input" type="number" min="0" step="1"
+                value="${current}"
+                data-acc="${accId}" data-etf="${h.etf}" data-type="amt"
+                onchange="updateState(this)" oninput="updateState(this)">
+              <span class="input-suffix">만원</span>
+            </div>
+          </div>
+          <div class="input-row">
+            <span class="input-label">원금</span>
+            <div class="amount-input-wrap">
+              <input class="amount-input" type="number" min="0" step="1"
+                value="${cost || ''}" placeholder="0"
+                data-acc="${accId}" data-etf="${h.etf}" data-type="cost"
+                onchange="updateState(this)" oninput="updateState(this)">
+              <span class="input-suffix">만원</span>
+            </div>
+          </div>
         </div>
       </td>
+      <td class="pct-cell">${returnHtml}</td>
       <td class="pct-cell">${fmtPct(currentPct)}</td>
       <td class="pct-cell ${diffClass(diff)}">${fmtDiff(diff)}</td>
       <td>${actionChip(diff, total)}</td>
@@ -1750,14 +1799,16 @@ function renderSummary() {
     }
   });
 
-  // Aggregate ETF amounts across all accounts
+  // Aggregate ETF amounts and costs across all accounts
   const etfAmounts = {};
-  Object.keys(GLOBAL_TARGETS).forEach(etf => { etfAmounts[etf] = 0; });
+  const etfCosts = {};
+  Object.keys(GLOBAL_TARGETS).forEach(etf => { etfAmounts[etf] = 0; etfCosts[etf] = 0; });
 
   ACCOUNTS.forEach(acc => {
     acc.holdings.forEach(h => {
       if (etfAmounts.hasOwnProperty(h.etf)) {
         etfAmounts[h.etf] += (state[acc.id][h.etf] || 0);
+        etfCosts[h.etf] += (costState[acc.id][h.etf] || 0);
       }
     });
   });
@@ -1765,13 +1816,17 @@ function renderSummary() {
   const tbody = document.getElementById('summary-tbody');
   let html = '';
   let totalAmt = 0;
+  let totalCost = 0;
   let safeTotalAmt = 0;
 
   const SAFE_ETFS = ['KODEX 종합채권(AA-이상)', 'KODEX CD금리액티브'];
 
   Object.entries(GLOBAL_TARGETS).forEach(([etf, targetPct]) => {
     const amt = etfAmounts[etf] || 0;
+    const cost = etfCosts[etf] || 0;
     totalAmt += amt;
+    if (cost > 0) totalCost += cost;
+
     const actualPct = globalTotal > 0 ? (amt / globalTotal * 100) : 0;
     const diff = actualPct - targetPct;
     const cls = diffClass(diff);
@@ -1783,6 +1838,11 @@ function renderSummary() {
 
     const statusIcon = Math.abs(diff) <= 2 ? '✓' : Math.abs(diff) <= 5 ? '△' : '⚠';
     const statusColor = Math.abs(diff) <= 2 ? 'var(--green)' : Math.abs(diff) <= 5 ? 'var(--amber)' : 'var(--red)';
+
+    const returnRate = cost > 0 ? (amt - cost) / cost * 100 : null;
+    const returnHtml = returnRate === null
+      ? `<span class="return-zero">—</span>`
+      : `<span class="return-chip ${returnRate > 0 ? 'return-pos' : returnRate < 0 ? 'return-neg' : 'return-zero'}">${returnRate >= 0 ? '+' : ''}${returnRate.toFixed(1)}%</span>`;
 
     html += `<tr>
       <td>
@@ -1796,6 +1856,7 @@ function renderSummary() {
       </td>
       <td class="pct-cell ${cls}">${fmtDiff(diff)}</td>
       <td class="pct-cell" style="font-family:var(--mono)">${fmt(amt)}</td>
+      <td class="pct-cell">${returnHtml}</td>
       <td><span style="color:${statusColor};font-size:15px;">${statusIcon}</span></td>
     </tr>`;
   });
@@ -1804,8 +1865,15 @@ function renderSummary() {
 
   const totalPctEl = document.getElementById('summary-total-pct');
   const totalAmtEl = document.getElementById('summary-total-amt');
+  const totalReturnEl = document.getElementById('summary-total-return');
   if (totalPctEl) totalPctEl.textContent = '100.0%';
   if (totalAmtEl) totalAmtEl.textContent = fmt(globalTotal);
+  if (totalReturnEl) {
+    const totalReturn = totalCost > 0 ? (globalTotal - totalCost) / totalCost * 100 : null;
+    totalReturnEl.innerHTML = totalReturn === null
+      ? '—'
+      : `<span class="return-chip ${totalReturn > 0 ? 'return-pos' : totalReturn < 0 ? 'return-neg' : 'return-zero'}">${totalReturn >= 0 ? '+' : ''}${totalReturn.toFixed(1)}%</span>`;
+  }
 
   // Asset type breakdown
   const safeTotal = safeTotalAmt;
@@ -1893,8 +1961,13 @@ function renderSummary() {
 function updateState(input) {
   const accId = input.dataset.acc;
   const etf = input.dataset.etf;
+  const type = input.dataset.type;
   const val = parseFloat(input.value) || 0;
-  state[accId][etf] = val;
+  if (type === 'cost') {
+    costState[accId][etf] = val;
+  } else {
+    state[accId][etf] = val;
+  }
   renderAccount(accId);
   renderSummary();
   updateLastUpdated();
@@ -1904,6 +1977,7 @@ function resetAccount(accId) {
   const acc = ACCOUNTS.find(a => a.id === accId);
   acc.holdings.forEach(h => {
     state[accId][h.etf] = h.defaultAmt;
+    costState[accId][h.etf] = h.defaultCost || 0;
   });
   renderAccount(accId);
   renderSummary();
