@@ -1643,7 +1643,7 @@ function rowHighlight(diff) {
 }
 
 function actionChip(diff, total) {
-  const amt = diff / 100 * total;
+  const amt = -diff / 100 * total;
   if (Math.abs(diff) <= 1) return `<span class="action-chip action-ok">✓ 유지</span>`;
   if (Math.abs(diff) > 5) {
     if (amt > 0) return `<span class="action-chip action-buy">▲ 매수 ${fmtAmt(amt)}</span>`;
