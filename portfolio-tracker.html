@@ -845,44 +845,7 @@ td.cell-red { color: var(--red); }
           <thead>
             <tr><th>통화</th><th class="right">목표</th><th class="right">현재</th><th>해당 자산</th></tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><strong>USD</strong></td>
-              <td class="pct-cell right" style="color:var(--text-primary)">~43%</td>
-              <td class="pct-cell right" style="color:var(--text-primary)">~43%</td>
-              <td style="font-size:12px;color:var(--text-secondary)">나스닥100, S&P500, 미국배당(ISA+연금2), KODEX선진국 내 미국분(×70%)</td>
-            </tr>
-            <tr>
-              <td><strong>KRW</strong></td>
-              <td class="pct-cell right" style="color:var(--text-primary)">~43%</td>
-              <td class="pct-cell right" style="color:var(--text-primary)">~43%</td>
-              <td style="font-size:12px;color:var(--text-secondary)">종합채권, CD금리, 글로벌자원생산기업(합성H), PLUS 신흥국MSCI(합성H · 환헤지)</td>
-            </tr>
-            <tr>
-              <td><strong>금 (KRW가격 · USD연동)</strong></td>
-              <td class="pct-cell right" style="color:var(--gold)">~9%</td>
-              <td class="pct-cell right" style="color:var(--gold)">~9%</td>
-              <td style="font-size:12px;color:var(--text-secondary)">KRX금현물</td>
-            </tr>
-            <tr>
-              <td><strong>중국통화 (CNY/HKD)</strong></td>
-              <td class="pct-cell right" style="color:var(--text-primary)">~4%</td>
-              <td class="pct-cell right" style="color:var(--text-primary)">~4%</td>
-              <td style="font-size:12px;color:var(--text-secondary)">차이나항셍테크 직접(3.7%) — PLUS신흥국 합성H로 내포 중국분은 환헤지됨</td>
-            </tr>
-            <tr>
-              <td><strong>기타 신흥국통화</strong></td>
-              <td class="pct-cell right" style="color:var(--text-muted)">~0%</td>
-              <td class="pct-cell right" style="color:var(--text-muted)">~0%</td>
-              <td style="font-size:12px;color:var(--text-secondary)">PLUS 신흥국MSCI 전체 환헤지 → 신흥국 통화 노출 없음</td>
-            </tr>
-            <tr>
-              <td><strong>기타 선진국 (EUR · JPY 등)</strong></td>
-              <td class="pct-cell right" style="color:var(--text-primary)">~1%</td>
-              <td class="pct-cell right" style="color:var(--text-primary)">~1%</td>
-              <td style="font-size:12px;color:var(--text-secondary)">KODEX 선진국 내 비미국분(×30%)</td>
-            </tr>
-          </tbody>
+          <tbody id="currency-tbody"></tbody>
         </table>
       </div>
       <div class="info-box" style="margin-top:10px;">
@@ -1681,6 +1644,32 @@ function actionChip(diff, total) {
 }
 
 // =============================================
+// CURRENCY MAPPING
+// =============================================
+const CURRENCY_MAP = {
+  'TIGER 미국배당 다우존스':                    { USD: 1.0 },
+  'KODEX 미국나스닥100':                        { USD: 1.0 },
+  'KODEX 미국S&P500':                           { USD: 1.0 },
+  'KODEX 선진국MSCI World':                     { USD: 0.7, OTHER_DM: 0.3 },
+  'KODEX 종합채권(AA-이상)':                    { KRW: 1.0 },
+  'KODEX CD금리액티브':                         { KRW: 1.0 },
+  'TIGER CD금리투자KIS':                        { KRW: 1.0 },
+  'RISE CD금리액티브':                          { KRW: 1.0 },
+  'PLUS 신흥국MSCI(합성H)':                     { KRW: 1.0 },
+  'TIGER 글로벌자원생산기업INDXX(합성H)':       { KRW: 1.0 },
+  'ACE KRX금현물':                              { GOLD: 1.0 },
+  'TIGER 차이나항셍테크':                       { CNY: 1.0 },
+};
+
+const CURRENCY_ROWS = [
+  { key: 'USD',      label: 'USD',                    desc: '나스닥100, S&P500, 미국배당, KODEX선진국 내 미국분(×70%)',         color: 'var(--text-primary)' },
+  { key: 'KRW',      label: 'KRW',                    desc: '종합채권, CD금리, 자원생산기업(합성H), PLUS 신흥국MSCI(합성H · 환헤지)', color: 'var(--text-primary)' },
+  { key: 'GOLD',     label: '금 (KRW가격 · USD연동)', desc: 'KRX금현물',                                                          color: 'var(--gold)' },
+  { key: 'CNY',      label: '중국통화 (CNY/HKD)',     desc: '차이나항셍테크 직접 — PLUS신흥국 합성H 내포분은 환헤지됨',          color: 'var(--text-primary)' },
+  { key: 'OTHER_DM', label: '기타 선진국 (EUR · JPY 등)', desc: 'KODEX 선진국 내 비미국분(×30%)',                               color: 'var(--text-primary)' },
+];
+
+// =============================================
 // RENDER ACCOUNT TABLE
 // =============================================
 function renderAccount(accId) {
@@ -1813,13 +1802,18 @@ function renderSummary() {
     });
   });
 
+  // safe:true 플래그로 전체 계좌 집계 (GLOBAL_TARGETS 미포함 ETF도 포함)
+  let safeTotalAmt = 0;
+  ACCOUNTS.forEach(acc => {
+    acc.holdings.forEach(h => {
+      if (h.safe) safeTotalAmt += (state[acc.id][h.etf] || 0);
+    });
+  });
+
   const tbody = document.getElementById('summary-tbody');
   let html = '';
   let totalAmt = 0;
   let totalCost = 0;
-  let safeTotalAmt = 0;
-
-  const SAFE_ETFS = ['KODEX 종합채권(AA-이상)', 'KODEX CD금리액티브'];
 
   Object.entries(GLOBAL_TARGETS).forEach(([etf, targetPct]) => {
     const amt = etfAmounts[etf] || 0;
@@ -1830,8 +1824,6 @@ function renderSummary() {
     const actualPct = globalTotal > 0 ? (amt / globalTotal * 100) : 0;
     const diff = actualPct - targetPct;
     const cls = diffClass(diff);
-
-    if (SAFE_ETFS.includes(etf)) safeTotalAmt += amt;
 
     const barPct = Math.min(100, (actualPct / Math.max(targetPct, 1)) * 100);
     const barColor = Math.abs(diff) <= 2 ? 'bar-green' : Math.abs(diff) <= 5 ? 'bar-amber' : 'bar-red';
@@ -1952,6 +1944,44 @@ function renderSummary() {
         현재: 위험 <strong style="color:${riskColor}">${fmtPct(riskPct)}</strong> / 안전 <strong style="color:var(--safe-color)">${fmtPct(safePct)}</strong>
       </div>
     `;
+  }
+
+  // Currency exposure (실시간 계산)
+  const currencyEl = document.getElementById('currency-tbody');
+  if (currencyEl) {
+    // 목표 비중: GLOBAL_TARGETS 기준
+    const targetCur = { USD: 0, KRW: 0, GOLD: 0, CNY: 0, OTHER_DM: 0 };
+    Object.entries(GLOBAL_TARGETS).forEach(([etf, pct]) => {
+      const map = CURRENCY_MAP[etf];
+      if (map) Object.entries(map).forEach(([c, r]) => { targetCur[c] += pct * r; });
+    });
+
+    // 현재 비중: 모든 계좌 state 합산
+    const curAmts = { USD: 0, KRW: 0, GOLD: 0, CNY: 0, OTHER_DM: 0 };
+    const allTotal = getGlobalTotal();
+    ACCOUNTS.forEach(acc => {
+      acc.holdings.forEach(h => {
+        const map = CURRENCY_MAP[h.etf];
+        if (map) {
+          const amt = state[acc.id][h.etf] || 0;
+          Object.entries(map).forEach(([c, r]) => { curAmts[c] += amt * r; });
+        }
+      });
+    });
+
+    currencyEl.innerHTML = CURRENCY_ROWS.map(row => {
+      const targetPct = targetCur[row.key] || 0;
+      const actualPct = allTotal > 0 ? (curAmts[row.key] / allTotal * 100) : 0;
+      const diff = actualPct - targetPct;
+      const diffStr = Math.abs(diff) < 0.05 ? '' :
+        ` <span style="font-size:11px;color:${diff > 0 ? 'var(--amber)' : 'var(--safe-color)'}">(${diff > 0 ? '+' : ''}${diff.toFixed(1)}%p)</span>`;
+      return `<tr>
+        <td><strong>${row.label}</strong></td>
+        <td class="pct-cell right" style="color:${row.color}">${targetPct.toFixed(1)}%</td>
+        <td class="pct-cell right" style="color:${row.color}">${actualPct.toFixed(1)}%${diffStr}</td>
+        <td style="font-size:12px;color:var(--text-secondary)">${row.desc}</td>
+      </tr>`;
+    }).join('');
   }
 }
 
