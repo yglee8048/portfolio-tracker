@@ -1592,8 +1592,8 @@
         state[acc.id] = {};
         costState[acc.id] = {};
         acc.holdings.forEach(h => {
-            state[acc.id][h.etf] = h.defaultAmt;
-            costState[acc.id][h.etf] = h.defaultCost || 0;
+            state[acc.id][h.etf] = h.purchaseCost;
+            costState[acc.id][h.etf] = h.currentCost || 0;
         });
     });
 
@@ -2058,8 +2058,8 @@
     function resetAccount(accId) {
         const acc = ACCOUNTS.find(a => a.id === accId);
         acc.holdings.forEach(h => {
-            state[accId][h.etf] = h.defaultAmt;
-            costState[accId][h.etf] = h.defaultCost || 0;
+            state[accId][h.etf] = h.purchaseCost;
+            costState[accId][h.etf] = h.currentCost || 0;
         });
         renderAccount(accId);
         renderSummary();
@@ -2102,13 +2102,13 @@
         let grandTotalBuyGap = 0;
         let grandTotalSellGap = 0;
         const accPlans = ACCOUNTS.map(acc => {
-            const accountTotal = acc.holdings.reduce((s, h) => s + h.defaultAmt, 0);
+            const accountTotal = acc.holdings.reduce((s, h) => s + h.purchaseCost, 0);
             const items = [];
             acc.holdings.forEach(h => {
                 const targetAmt = accountTotal * h.targetPct / 100;
-                const gap = targetAmt - h.defaultAmt; // 양수=매수필요, 음수=매도필요
+                const gap = targetAmt - h.purchaseCost; // 양수=매수필요, 음수=매도필요
                 if (Math.abs(gap) > 0.5) {
-                    items.push({etf: h.etf, targetAmt, currentAmt: h.defaultAmt, gap, perRound: gap / remainingRounds});
+                    items.push({etf: h.etf, targetAmt, currentAmt: h.purchaseCost, gap, perRound: gap / remainingRounds});
                 }
             });
             // 매수 먼저, 그 다음 매도 순으로 정렬

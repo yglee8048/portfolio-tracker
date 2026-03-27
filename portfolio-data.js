@@ -35,8 +35,8 @@ const ETF_LIST = [
 //   holdings 배열 — 각 항목:
 //     etf        : ETF 전체 이름
 //     targetPct  : 이 계좌 내 목표 비중 (%)
-//     defaultAmt : 현재 보유 금액 (만원) ← 잔액 변경 시 이 값을 수정하세요
-//     defaultCost : 현재 가치 (만원) ← 가격 변동 시 이 값을 수정하세요
+//     purchaseCost : 현재 보유 금액 (만원) ← 잔액 변경 시 이 값을 수정하세요
+//     currentCost : 현재 가치 (만원) ← 가격 변동 시 이 값을 수정하세요
 //   * 분류(주식/대안/안전)는 ETF_LIST의 type 필드에서 자동으로 읽어옵니다.
 // ---------------------------------------------------------------
 const ACCOUNTS = [
@@ -45,11 +45,11 @@ const ACCOUNTS = [
         label: 'ISA',   // 배당코어
         irpSafetyRequired: false,
         holdings: [
-            {etf: 'TIGER 미국배당 다우존스', targetPct: 60, defaultAmt: 460, defaultCost: 461},
-            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 20, defaultAmt: 224, defaultCost: 223},
-            {etf: 'KODEX CD금리액티브', targetPct: 20, defaultAmt: 6551, defaultCost: 6561},
-            {etf: 'ACE KRX금현물', targetPct: 0, defaultAmt: 227, defaultCost: 225},
-            {etf: '현금', targetPct: 0, defaultAmt: 215, defaultCost: 215},
+            {etf: 'TIGER 미국배당 다우존스', targetPct: 60, purchaseCost: 460, currentCost: 461},
+            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 20, purchaseCost: 224, currentCost: 223},
+            {etf: 'KODEX CD금리액티브', targetPct: 20, purchaseCost: 6551, currentCost: 6561},
+            {etf: 'ACE KRX금현물', targetPct: 0, purchaseCost: 227, currentCost: 225},
+            {etf: '현금', targetPct: 0, purchaseCost: 215, currentCost: 215},
         ]
     },
     {
@@ -57,13 +57,13 @@ const ACCOUNTS = [
         label: '연금저축1', // 미국+중국+인도
         irpSafetyRequired: false,
         holdings: [
-            {etf: 'KODEX 미국S&P500', targetPct: 50, defaultAmt: 228, defaultCost: 226},
-            {etf: 'TIGER 차이나항셍테크', targetPct: 20, defaultAmt: 91, defaultCost: 90},
-            {etf: 'KODEX 차이나AI테크액티브', targetPct: 10, defaultAmt: 0, defaultCost: 0},
-            {etf: 'TIGER 인도니프티50', targetPct: 20, defaultAmt: 0, defaultCost: 0},
-            {etf: 'TIGER CD금리투자KIS', targetPct: 0, defaultAmt: 1825, defaultCost: 1827},
-            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 0, defaultAmt: 136, defaultCost: 134},
-            {etf: '현금', targetPct: 0, defaultAmt: 13, defaultCost: 13},
+            {etf: 'KODEX 미국S&P500', targetPct: 50, purchaseCost: 228, currentCost: 226},
+            {etf: 'TIGER 차이나항셍테크', targetPct: 20, purchaseCost: 91, currentCost: 90},
+            {etf: 'KODEX 차이나AI테크액티브', targetPct: 10, purchaseCost: 0, currentCost: 0},
+            {etf: 'TIGER 인도니프티50', targetPct: 20, purchaseCost: 0, currentCost: 0},
+            {etf: 'TIGER CD금리투자KIS', targetPct: 0, purchaseCost: 1825, currentCost: 1827},
+            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 0, purchaseCost: 136, currentCost: 134},
+            {etf: '현금', targetPct: 0, purchaseCost: 13, currentCost: 13},
         ]
     },
     {
@@ -71,27 +71,27 @@ const ACCOUNTS = [
         label: '연금저축2', // 올웨더
         irpSafetyRequired: false,
         holdings: [
-            {etf: 'KODEX 미국S&P500', targetPct: 35, defaultAmt: 148, defaultCost: 146},
-            {etf: 'TIGER 미국배당 다우존스', targetPct: 15, defaultAmt: 74, defaultCost: 74},
-            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 20, defaultAmt: 89, defaultCost: 89},
-            {etf: 'ACE KRX금현물', targetPct: 15, defaultAmt: 73, defaultCost: 72},
-            {etf: 'TIGER 글로벌자원생산기업INDXX(합성H)', targetPct: 15, defaultAmt: 71, defaultCost: 72},
-            {etf: 'TIGER CD금리투자KIS', targetPct: 0, defaultAmt: 2020, defaultCost: 2022},
-            {etf: '현금', targetPct: 0, defaultAmt: 19, defaultCost: 19},
+            {etf: 'KODEX 미국S&P500', targetPct: 35, purchaseCost: 148, currentCost: 146},
+            {etf: 'TIGER 미국배당 다우존스', targetPct: 15, purchaseCost: 74, currentCost: 74},
+            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 20, purchaseCost: 89, currentCost: 89},
+            {etf: 'ACE KRX금현물', targetPct: 15, purchaseCost: 73, currentCost: 72},
+            {etf: 'TIGER 글로벌자원생산기업INDXX(합성H)', targetPct: 15, purchaseCost: 71, currentCost: 72},
+            {etf: 'TIGER CD금리투자KIS', targetPct: 0, purchaseCost: 2020, currentCost: 2022},
+            {etf: '현금', targetPct: 0, purchaseCost: 19, currentCost: 19},
         ]
     },
     {
         id: 'irp-retire',
-        label: 'IRP 퇴직연금',
+        label: 'IRP 퇴직연금',  // 나스닥 코어
         irpSafetyRequired: true,
         holdings: [
-            {etf: 'KODEX 미국나스닥100', targetPct: 40, defaultAmt: 376, defaultCost: 371},
-            {etf: 'KODEX MSCI선진국', targetPct: 30, defaultAmt: 0, defaultCost: 0},
-            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, defaultAmt: 224, defaultCost: 223},
-            {etf: 'TIGER 차이나항셍테크', targetPct: 0, defaultAmt: 19, defaultCost: 18},
-            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 0, defaultAmt: 113, defaultCost: 111},
-            {etf: 'KODEX CD금리액티브', targetPct: 0, defaultAmt: 2901, defaultCost: 2904},
-            {etf: '현금', targetPct: 0, defaultAmt: 4, defaultCost: 4},
+            {etf: 'KODEX 미국나스닥100', targetPct: 40, purchaseCost: 376, currentCost: 371},
+            {etf: 'KODEX MSCI선진국', targetPct: 30, purchaseCost: 0, currentCost: 0},
+            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, purchaseCost: 224, currentCost: 223},
+            {etf: 'TIGER 차이나항셍테크', targetPct: 0, purchaseCost: 19, currentCost: 18},
+            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 0, purchaseCost: 113, currentCost: 111},
+            {etf: 'KODEX CD금리액티브', targetPct: 0, purchaseCost: 2901, currentCost: 2904},
+            {etf: '현금', targetPct: 0, purchaseCost: 4, currentCost: 4},
         ]
     },
     {
@@ -99,13 +99,13 @@ const ACCOUNTS = [
         label: 'IRP 개인연금',  // 세계 분산
         irpSafetyRequired: true,
         holdings: [
-            {etf: 'KODEX MSCI선진국', targetPct: 40, defaultAmt: 88, defaultCost: 87},
-            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 30, defaultAmt: 68, defaultCost: 68},
-            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, defaultAmt: 67, defaultCost: 67},
-            {etf: 'KODEX CD금리액티브', targetPct: 0, defaultAmt: 323, defaultCost: 323},
-            {etf: 'TIGER CD금리투자KIS', targetPct: 0, defaultAmt: 229, defaultCost: 229},
-            {etf: 'RISE CD금리액티브', targetPct: 0, defaultAmt: 393, defaultCost: 392},
-            {etf: '현금', targetPct: 0, defaultAmt: 357, defaultCost: 357},
+            {etf: 'KODEX MSCI선진국', targetPct: 40, purchaseCost: 88, currentCost: 87},
+            {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 30, purchaseCost: 68, currentCost: 68},
+            {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, purchaseCost: 67, currentCost: 67},
+            {etf: 'KODEX CD금리액티브', targetPct: 0, purchaseCost: 323, currentCost: 323},
+            {etf: 'TIGER CD금리투자KIS', targetPct: 0, purchaseCost: 229, currentCost: 229},
+            {etf: 'RISE CD금리액티브', targetPct: 0, purchaseCost: 393, currentCost: 392},
+            {etf: '현금', targetPct: 0, purchaseCost: 357, currentCost: 357},
         ]
     },
 ];
