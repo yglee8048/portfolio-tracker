@@ -622,7 +622,7 @@ td {
   margin: 24px 0;
 }
 
-/* RISK INDICATOR */
+/* TYPE INDICATOR */
 .risk-label {
   font-size: 10px;
   padding: 1px 6px;
@@ -630,8 +630,9 @@ td {
   font-family: var(--mono);
   font-weight: 600;
 }
-.risk-safe { background: var(--safe-bg); color: var(--safe-color); }
-.risk-risk { background: rgba(232,184,75,0.1); color: var(--risk-color); }
+.risk-safe  { background: var(--safe-bg); color: var(--safe-color); }
+.risk-stock { background: rgba(232,184,75,0.1); color: var(--risk-color); }
+.risk-alt   { background: rgba(46,202,142,0.1); color: var(--green); }
 
 /* TOOLTIP */
 .tooltip-wrap {
@@ -752,14 +753,6 @@ td.cell-red { color: var(--red); }
     ISA
     <span class="tab-amount" id="tab-amount-isa"></span>
   </div>
-  <div class="nav-tab" data-panel="irp-retire" onclick="switchPanel('irp-retire')">
-    IRP 퇴직연금
-    <span class="tab-amount" id="tab-amount-irp-retire"></span>
-  </div>
-  <div class="nav-tab" data-panel="irp-personal" onclick="switchPanel('irp-personal')">
-    IRP 개인연금
-    <span class="tab-amount" id="tab-amount-irp-personal"></span>
-  </div>
   <div class="nav-tab" data-panel="pension1" onclick="switchPanel('pension1')">
     연금저축1
     <span class="tab-amount" id="tab-amount-pension1"></span>
@@ -768,11 +761,19 @@ td.cell-red { color: var(--red); }
     연금저축2
     <span class="tab-amount" id="tab-amount-pension2"></span>
   </div>
+  <div class="nav-tab" data-panel="irp-retire" onclick="switchPanel('irp-retire')">
+    IRP 퇴직연금
+    <span class="tab-amount" id="tab-amount-irp-retire"></span>
+  </div>
+  <div class="nav-tab" data-panel="irp-personal" onclick="switchPanel('irp-personal')">
+    IRP 개인연금
+    <span class="tab-amount" id="tab-amount-irp-personal"></span>
+  </div>
   <div class="nav-tab" data-panel="contrib" onclick="switchPanel('contrib')">
     연간 기여금
   </div>
   <div class="nav-tab" data-panel="dca" onclick="switchPanel('dca')">
-    분할매수 계획
+    분할매수·매도 계획
   </div>
   <div class="nav-tab" data-panel="notes" onclick="switchPanel('notes')">
     투자 노트
@@ -878,6 +879,7 @@ td.cell-red { color: var(--red); }
         <thead>
           <tr>
             <th>ETF</th>
+            <th>분류</th>
             <th class="right">목표 비율</th>
             <th class="right">현재가 / 원금</th>
             <th class="right">수익률</th>
@@ -997,6 +999,7 @@ td.cell-red { color: var(--red); }
         <thead>
           <tr>
             <th>ETF</th>
+            <th>분류</th>
             <th class="right">목표 비율</th>
             <th class="right">현재가 / 원금</th>
             <th class="right">수익률</th>
@@ -1035,6 +1038,7 @@ td.cell-red { color: var(--red); }
         <thead>
           <tr>
             <th>ETF</th>
+            <th>분류</th>
             <th class="right">목표 비율</th>
             <th class="right">현재가 / 원금</th>
             <th class="right">수익률</th>
@@ -1181,285 +1185,11 @@ td.cell-red { color: var(--red); }
     </div>
   </div>
 
-  <!-- ===== DCA 분할매수 계획 PANEL ===== -->
+  <!-- ===== DCA 분할매수·매도 계획 PANEL ===== -->
   <div class="panel" id="panel-dca">
-    <div class="section-title">분할매수 계획</div>
-    <div class="section-desc">현재 100% CD금리액티브 → 3개월(4월~6월) 10회 분할 매수로 목표 포트폴리오 구축</div>
+    <div class="section-title">분할매수·매도 계획</div>
+    <div id="dca-content"><!-- renderDca() 가 채움 --></div>
 
-    <!-- 전략 비교 -->
-    <div style="margin-bottom:20px;">
-      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">전략 비교</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>전략</th>
-              <th>방식</th>
-              <th>장점</th>
-              <th>단점</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="etf-name">정기 매수</span></td>
-              <td style="font-size:12px;color:var(--text-secondary)">2주마다 고정 날짜</td>
-              <td style="font-size:12px;color:var(--green)">감정 배제 · 단순</td>
-              <td style="font-size:12px;color:var(--text-muted)">평균 단가만 추구</td>
-            </tr>
-            <tr>
-              <td><span class="etf-name">하락 매수</span></td>
-              <td style="font-size:12px;color:var(--text-secondary)">전일 대비 −2% 이상 시</td>
-              <td style="font-size:12px;color:var(--green)">저가 매수 가능</td>
-              <td style="font-size:12px;color:var(--red)">하락 없으면 미매수 위험</td>
-            </tr>
-            <tr style="background:rgba(232,184,75,0.05);">
-              <td>
-                <span class="etf-name" style="color:var(--gold)">혼합 (권장)</span>
-                <div class="etf-ticker">정기 6회 + 기회 4회</div>
-              </td>
-              <td style="font-size:12px;color:var(--text-secondary)">격주 정기 + 하락 트리거</td>
-              <td style="font-size:12px;color:var(--green)">원칙 유지 + 저가 포착</td>
-              <td style="font-size:12px;color:var(--text-muted)">약간 복잡</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 정기 매수 스케줄 -->
-    <div style="margin-bottom:20px;">
-      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">정기 매수 스케줄 (6회 · 격주 월요일)</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>회차</th>
-              <th>날짜</th>
-              <th class="right">ISA</th>
-              <th class="right">IRP 퇴직</th>
-              <th class="right">IRP 개인</th>
-              <th class="right">연금1</th>
-              <th class="right">연금2</th>
-              <th class="right">합계</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">1회</span></td>
-              <td><strong>2026-04-06</strong> <span style="font-size:11px;color:var(--text-muted)">(월)</span></td>
-              <td class="pct-cell" style="color:var(--text-primary)">576만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">377만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">118만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">229만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">237만</td>
-              <td class="pct-cell" style="color:var(--gold);font-weight:700">1,537만</td>
-            </tr>
-            <tr>
-              <td><span style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">2회</span></td>
-              <td><strong>2026-04-20</strong> <span style="font-size:11px;color:var(--text-muted)">(월)</span></td>
-              <td class="pct-cell" style="color:var(--text-primary)">576만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">377만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">118만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">229만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">237만</td>
-              <td class="pct-cell" style="color:var(--gold);font-weight:700">1,537만</td>
-            </tr>
-            <tr>
-              <td><span style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">3회</span></td>
-              <td><strong>2026-05-04</strong> <span style="font-size:11px;color:var(--text-muted)">(월)</span></td>
-              <td class="pct-cell" style="color:var(--text-primary)">576만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">377만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">118만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">229만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">237만</td>
-              <td class="pct-cell" style="color:var(--gold);font-weight:700">1,537만</td>
-            </tr>
-            <tr>
-              <td><span style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">4회</span></td>
-              <td><strong>2026-05-18</strong> <span style="font-size:11px;color:var(--text-muted)">(월)</span></td>
-              <td class="pct-cell" style="color:var(--text-primary)">576만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">377만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">118만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">229만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">237만</td>
-              <td class="pct-cell" style="color:var(--gold);font-weight:700">1,537만</td>
-            </tr>
-            <tr>
-              <td><span style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">5회</span></td>
-              <td><strong>2026-06-01</strong> <span style="font-size:11px;color:var(--text-muted)">(월)</span></td>
-              <td class="pct-cell" style="color:var(--text-primary)">576만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">377만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">118만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">229만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">237만</td>
-              <td class="pct-cell" style="color:var(--gold);font-weight:700">1,537만</td>
-            </tr>
-            <tr>
-              <td><span style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">6회</span></td>
-              <td><strong>2026-06-15</strong> <span style="font-size:11px;color:var(--text-muted)">(월)</span></td>
-              <td class="pct-cell" style="color:var(--text-primary)">576만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">377만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">118만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">229만</td>
-              <td class="pct-cell" style="color:var(--text-primary)">237만</td>
-              <td class="pct-cell" style="color:var(--gold);font-weight:700">1,537만</td>
-            </tr>
-            <tr style="background:rgba(240,160,48,0.06);">
-              <td colspan="2" style="color:var(--amber);font-size:12px;font-weight:600">기회적 매수 4회 (트리거 발생 시)</td>
-              <td class="pct-cell" style="color:var(--amber)">~865만</td>
-              <td class="pct-cell" style="color:var(--amber)">~566만</td>
-              <td class="pct-cell" style="color:var(--amber)">~177만</td>
-              <td class="pct-cell" style="color:var(--amber)">~344만</td>
-              <td class="pct-cell" style="color:var(--amber)">~356만</td>
-              <td class="pct-cell" style="color:var(--amber);font-weight:700">~2,308만</td>
-            </tr>
-            <tr class="total-row">
-              <td colspan="2"><strong>10회 합계</strong></td>
-              <td class="pct-cell">5,761만</td>
-              <td class="pct-cell">3,772만</td>
-              <td class="pct-cell">1,180만</td>
-              <td class="pct-cell">2,293만</td>
-              <td class="pct-cell">2,368만</td>
-              <td class="pct-cell" style="color:var(--gold)">15,374만</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 기회적 매수 조건 -->
-    <div class="info-box" style="border-left-color:var(--amber);margin-bottom:20px;">
-      <strong>기회적 매수 트리거 (4회)</strong><br>
-      다음 중 하나 해당 시 → 정기 매수 금액의 <strong>1.5배</strong> 집중 투입:<br>
-      ① S&P500 또는 NASDAQ 단일 일간 <strong>−2% 이상</strong> 하락<br>
-      ② 직전 매수일 대비 누적 <strong>−3% 이상</strong> 하락<br>
-      ③ 연속 하락 3거래일 이상 (방향성 확인 후)<br>
-      → IRP 계좌는 기회적 매수 시에도 <strong>종합채권 30% 비율 비례 유지</strong> 필수
-    </div>
-
-    <!-- ETF별 1회 매수 금액 -->
-    <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">계좌별 ETF 1회 기본 매수금액 (정기 매수 기준)</div>
-    <div class="grid-2">
-      <!-- ISA -->
-      <div class="contrib-card" style="margin-bottom:0">
-        <div class="contrib-title">ISA <span style="font-size:13px;color:var(--text-muted)">1회 576만원</span></div>
-        <div class="contrib-etfs" style="margin-top:8px;">
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">TIGER 미국배당 다우존스</div><div class="contrib-etf-reason">목표 40%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">231만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">KODEX 종합채권(AA-이상)</div><div class="contrib-etf-reason">목표 20%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">115만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">ACE KRX금현물</div><div class="contrib-etf-reason">목표 15%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">115만</div>
-          </div>
-          <div class="contrib-etf-row" style="border-left:2px solid var(--safe-color);">
-            <div><div class="contrib-etf-name" style="color:var(--text-muted)">CD금리액티브 유지</div><div class="contrib-etf-reason">목표 25% — 자동 비율 감소</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-muted)">매도</div>
-          </div>
-        </div>
-      </div>
-      <!-- IRP 퇴직 -->
-      <div class="contrib-card" style="margin-bottom:0">
-        <div class="contrib-title">IRP 퇴직연금 <span style="font-size:13px;color:var(--text-muted)">1회 377만원</span></div>
-        <div class="contrib-etfs" style="margin-top:8px;">
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">KODEX 미국나스닥100</div><div class="contrib-etf-reason">목표 50%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">189만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">KODEX 종합채권(AA-이상)</div><div class="contrib-etf-reason">목표 30% · 안전자산 의무</div></div>
-            <div class="contrib-etf-pct" style="color:var(--safe-color)">113만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">PLUS 신흥국MSCI(합성H)</div><div class="contrib-etf-reason">목표 15%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">57만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">TIGER 차이나항셍테크</div><div class="contrib-etf-reason">목표 5%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">19만</div>
-          </div>
-        </div>
-      </div>
-      <!-- IRP 개인 -->
-      <div class="contrib-card" style="margin-bottom:0">
-        <div class="contrib-title">IRP 개인연금 <span style="font-size:13px;color:var(--text-muted)">1회 118만원</span></div>
-        <div class="contrib-etfs" style="margin-top:8px;">
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">KODEX 선진국MSCI World</div><div class="contrib-etf-reason">목표 40%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">47만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">PLUS 신흥국MSCI(합성H)</div><div class="contrib-etf-reason">목표 30%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">35만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">KODEX 종합채권(AA-이상)</div><div class="contrib-etf-reason">목표 30% · 안전자산 의무</div></div>
-            <div class="contrib-etf-pct" style="color:var(--safe-color)">35만</div>
-          </div>
-        </div>
-      </div>
-      <!-- 연금저축1 -->
-      <div class="contrib-card" style="margin-bottom:0">
-        <div class="contrib-title">연금저축1 <span style="font-size:13px;color:var(--text-muted)">1회 229만원</span></div>
-        <div class="contrib-etfs" style="margin-top:8px;">
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">KODEX 미국S&P500</div><div class="contrib-etf-reason">목표 50%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">115만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">PLUS 신흥국MSCI(합성H)</div><div class="contrib-etf-reason">목표 30%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">69만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">TIGER 차이나항셍테크</div><div class="contrib-etf-reason">목표 20% · 실질 노출 ~29% 주의</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">46만</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="contrib-card" style="margin-top:16px;">
-      <div class="contrib-title">연금저축2 <span style="font-size:13px;color:var(--text-muted)">1회 237만원</span></div>
-      <div class="contrib-etfs" style="margin-top:8px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">KODEX 미국S&P500</div><div class="contrib-etf-reason">목표 30%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">75만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">KODEX 종합채권(AA-이상)</div><div class="contrib-etf-reason">목표 20%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--safe-color)">50만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">ACE KRX금현물</div><div class="contrib-etf-reason">목표 15%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">37만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">TIGER 글로벌자원생산기업</div><div class="contrib-etf-reason">목표 15%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">37만</div>
-          </div>
-          <div class="contrib-etf-row">
-            <div><div class="contrib-etf-name">TIGER 미국배당 다우존스</div><div class="contrib-etf-reason">목표 15%</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-primary)">37만</div>
-          </div>
-          <div class="contrib-etf-row" style="border-left:2px solid var(--safe-color);">
-            <div><div class="contrib-etf-name" style="color:var(--text-muted)">CD금리액티브 유지</div><div class="contrib-etf-reason">목표 5% (125만원)</div></div>
-            <div class="contrib-etf-pct" style="color:var(--text-muted)">잔류</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <hr class="divider">
-    <div class="info-box" style="border-left-color:var(--green);">
-      <strong>분할매수 완료 후 최종 상태</strong><br>
-      10회 완료 시 → 각 계좌 목표 비율 달성. CD금리 잔여분: ISA 1,920만 + 연금저축2 125만 = 2,045만원 (포트폴리오 설계상 유지)<br>
-      이후 → 연간 납입 시 목표 대비 낮은 ETF에 우선 배분 (자동 리밸런싱)
-    </div>
   </div>
 
 
@@ -1594,6 +1324,10 @@ ACCOUNTS.forEach(acc => {
 // =============================================
 // UTILITIES
 // =============================================
+function getEtfType(etfName) {
+  const entry = ETF_LIST.find(e => e.name === etfName);
+  return entry ? entry.type : 'safe'; // 현금 등 미등록 항목은 안전으로 취급
+}
 function fmt(n) {
   return n.toLocaleString('ko-KR') + '만원';
 }
@@ -1644,22 +1378,9 @@ function actionChip(diff, total) {
 }
 
 // =============================================
-// CURRENCY MAPPING
+// CURRENCY MAPPING (ETF_LIST.currency 에서 자동 생성)
 // =============================================
-const CURRENCY_MAP = {
-  'TIGER 미국배당 다우존스':                    { USD: 1.0 },
-  'KODEX 미국나스닥100':                        { USD: 1.0 },
-  'KODEX 미국S&P500':                           { USD: 1.0 },
-  'KODEX 선진국MSCI World':                     { USD: 0.7, OTHER_DM: 0.3 },
-  'KODEX 종합채권(AA-이상)':                    { KRW: 1.0 },
-  'KODEX CD금리액티브':                         { KRW: 1.0 },
-  'TIGER CD금리투자KIS':                        { KRW: 1.0 },
-  'RISE CD금리액티브':                          { KRW: 1.0 },
-  'PLUS 신흥국MSCI(합성H)':                     { KRW: 1.0 },
-  'TIGER 글로벌자원생산기업INDXX(합성H)':       { KRW: 1.0 },
-  'ACE KRX금현물':                              { GOLD: 1.0 },
-  'TIGER 차이나항셍테크':                       { CNY: 1.0 },
-};
+const CURRENCY_MAP = Object.fromEntries(ETF_LIST.map(e => [e.name, e.currency]));
 
 const CURRENCY_ROWS = [
   { key: 'USD',      label: 'USD',                    desc: '나스닥100, S&P500, 미국배당, KODEX선진국 내 미국분(×70%)',         color: 'var(--text-primary)' },
@@ -1667,6 +1388,7 @@ const CURRENCY_ROWS = [
   { key: 'GOLD',     label: '금 (KRW가격 · USD연동)', desc: 'KRX금현물',                                                          color: 'var(--gold)' },
   { key: 'CNY',      label: '중국통화 (CNY/HKD)',     desc: '차이나항셍테크 직접 — PLUS신흥국 합성H 내포분은 환헤지됨',          color: 'var(--text-primary)' },
   { key: 'OTHER_DM', label: '기타 선진국 (EUR · JPY 등)', desc: 'KODEX 선진국 내 비미국분(×30%)',                               color: 'var(--text-primary)' },
+  { key: 'INR',      label: 'INR (인도 루피)',            desc: '인도니프티50',                                                    color: 'var(--text-primary)' },
 ];
 
 // =============================================
@@ -1688,23 +1410,23 @@ function renderAccount(accId) {
     const currentPct = total > 0 ? (current / total * 100) : 0;
     const diff = currentPct - h.targetPct;
     const rowCls = rowHighlight(diff);
-    if (h.safe) safeTotal += currentPct;
+    const etfType = getEtfType(h.etf);
+    if (etfType === 'safe') safeTotal += currentPct;
 
     const returnRate = cost > 0 ? (current - cost) / cost * 100 : null;
     const returnHtml = returnRate === null
       ? `<span class="return-zero">—</span>`
       : `<span class="return-chip ${returnRate > 0 ? 'return-pos' : returnRate < 0 ? 'return-neg' : 'return-zero'}">${returnRate >= 0 ? '+' : ''}${returnRate.toFixed(1)}%</span>`;
 
-    const safeCol = acc.showSafeCol
-      ? `<td><span class="risk-label ${h.safe ? 'risk-safe' : 'risk-risk'}">${h.safe ? '안전' : '위험'}</span></td>`
-      : '';
+    const typeLabels = { stock: '주식', alt: '대안', safe: '안전' };
+    const typeCss    = { stock: 'risk-stock', alt: 'risk-alt', safe: 'risk-safe' };
+    const typeCol = `<td><span class="risk-label ${typeCss[etfType] || ''}">${typeLabels[etfType] || ''}</span></td>`;
 
     html += `<tr class="${rowCls}">
       <td>
         <div class="etf-name">${h.etf}</div>
-        <div class="etf-ticker">${ETF_SHORT[h.etf] || ''}</div>
       </td>
-      ${safeCol}
+      ${typeCol}
       <td class="pct-cell">${fmtPct(h.targetPct)}</td>
       <td>
         <div class="input-stack">
@@ -1758,7 +1480,7 @@ function renderAccount(accId) {
     if (compEl) {
       let safeActual = 0;
       acc.holdings.forEach(h => {
-        if (h.safe) {
+        if (getEtfType(h.etf) === 'safe') {
           const cur = state[accId][h.etf] || 0;
           safeActual += total > 0 ? (cur / total * 100) : 0;
         }
@@ -1770,6 +1492,28 @@ function renderAccount(accId) {
         : `<span class="check-icon">✗</span> 안전자산 ${fmtPct(safeActual)} — IRP 30% 의무 미충족! (${fmtPct(30 - safeActual)} 부족)`;
     }
   }
+}
+
+// =============================================
+// DYNAMIC GLOBAL TARGETS
+// =============================================
+function computeDynamicGlobalTargets() {
+  let globalTotal = 0;
+  const accTotals = {};
+  ACCOUNTS.forEach(acc => {
+    const t = acc.holdings.reduce((s, h) => s + (state[acc.id][h.etf] || 0), 0);
+    accTotals[acc.id] = t;
+    globalTotal += t;
+  });
+  if (globalTotal === 0) return {};
+  const targets = {};
+  ACCOUNTS.forEach(acc => {
+    acc.holdings.forEach(h => {
+      if (!targets[h.etf]) targets[h.etf] = 0;
+      targets[h.etf] += (accTotals[acc.id] / globalTotal) * h.targetPct;
+    });
+  });
+  return targets;
 }
 
 // =============================================
@@ -1791,22 +1535,27 @@ function renderSummary() {
   // Aggregate ETF amounts and costs across all accounts
   const etfAmounts = {};
   const etfCosts = {};
-  Object.keys(GLOBAL_TARGETS).forEach(etf => { etfAmounts[etf] = 0; etfCosts[etf] = 0; });
+  const allEtfsSet = new Set(ACCOUNTS.flatMap(acc => acc.holdings.map(h => h.etf)));
+  const allEtfs = [
+    ...ETF_LIST.map(e => e.name).filter(n => allEtfsSet.has(n)),
+    ...[...allEtfsSet].filter(n => !ETF_LIST.some(e => e.name === n))
+  ];
+  allEtfs.forEach(etf => { etfAmounts[etf] = 0; etfCosts[etf] = 0; });
 
   ACCOUNTS.forEach(acc => {
     acc.holdings.forEach(h => {
-      if (etfAmounts.hasOwnProperty(h.etf)) {
-        etfAmounts[h.etf] += (state[acc.id][h.etf] || 0);
-        etfCosts[h.etf] += (costState[acc.id][h.etf] || 0);
-      }
+      etfAmounts[h.etf] += (state[acc.id][h.etf] || 0);
+      etfCosts[h.etf] += (costState[acc.id][h.etf] || 0);
     });
   });
 
-  // safe:true 플래그로 전체 계좌 집계 (GLOBAL_TARGETS 미포함 ETF도 포함)
+  const dynamicTargets = computeDynamicGlobalTargets();
+
+  // ETF_LIST type === 'safe' 로 전체 계좌 집계
   let safeTotalAmt = 0;
   ACCOUNTS.forEach(acc => {
     acc.holdings.forEach(h => {
-      if (h.safe) safeTotalAmt += (state[acc.id][h.etf] || 0);
+      if (getEtfType(h.etf) === 'safe') safeTotalAmt += (state[acc.id][h.etf] || 0);
     });
   });
 
@@ -1815,7 +1564,8 @@ function renderSummary() {
   let totalAmt = 0;
   let totalCost = 0;
 
-  Object.entries(GLOBAL_TARGETS).forEach(([etf, targetPct]) => {
+  allEtfs.forEach(etf => {
+    const targetPct = dynamicTargets[etf] || 0;
     const amt = etfAmounts[etf] || 0;
     const cost = etfCosts[etf] || 0;
     totalAmt += amt;
@@ -1839,7 +1589,6 @@ function renderSummary() {
     html += `<tr>
       <td>
         <div class="etf-name">${etf}</div>
-        <div class="etf-ticker">${ETF_SHORT[etf] || ''}</div>
       </td>
       <td class="pct-cell">${fmtPct(targetPct)}</td>
       <td class="pct-cell">
@@ -1875,16 +1624,21 @@ function renderSummary() {
   const riskPct = 100 - safePct;
 
   // Note: gold/resources are considered "risk" for this ratio
+  const stockEtfs = ETF_LIST.filter(e => e.type === 'stock').map(e => e.name);
+  const altEtfs   = ETF_LIST.filter(e => e.type === 'alt').map(e => e.name);
+  const safeEtfs  = ETF_LIST.filter(e => e.type === 'safe').map(e => e.name);
+  const targetStockPct = stockEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
+  const targetAltPct   = altEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
+  const targetSafePct  = safeEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
+
   const assetTbody = document.getElementById('summary-asset-tbody');
   if (assetTbody) {
     // More detailed breakdown
     let riskStockAmt = 0;
     let altAmt = 0;
-    const STOCK_ETFS = ['KODEX 미국나스닥100','KODEX 미국S&P500','TIGER 미국배당 다우존스','TIGER 차이나항셍테크','PLUS 신흥국MSCI(합성H)','KODEX 선진국MSCI World'];
-    const ALT_ETFS = ['TIGER 글로벌자원생산기업INDXX(합성H)','ACE KRX금현물'];
 
-    STOCK_ETFS.forEach(etf => { riskStockAmt += (etfAmounts[etf] || 0); });
-    ALT_ETFS.forEach(etf => { altAmt += (etfAmounts[etf] || 0); });
+    stockEtfs.forEach(etf => { riskStockAmt += (etfAmounts[etf] || 0); });
+    altEtfs.forEach(etf => { altAmt += (etfAmounts[etf] || 0); });
 
     const stockPct = globalTotal > 0 ? (riskStockAmt / globalTotal * 100) : 0;
     const altPct = globalTotal > 0 ? (altAmt / globalTotal * 100) : 0;
@@ -1892,19 +1646,19 @@ function renderSummary() {
     assetTbody.innerHTML = `
       <tr>
         <td><span class="risk-dot"></span>주식</td>
-        <td class="pct-cell">~57%</td>
+        <td class="pct-cell">${fmtPct(targetStockPct)}</td>
         <td class="pct-cell">${fmtPct(stockPct)}</td>
         <td class="pct-cell" style="font-family:var(--mono);font-size:12px;">${fmt(riskStockAmt)}</td>
       </tr>
       <tr>
         <td><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber);margin-right:4px;vertical-align:middle;"></span>대안자산</td>
-        <td class="pct-cell">~11%</td>
+        <td class="pct-cell">${fmtPct(targetAltPct)}</td>
         <td class="pct-cell">${fmtPct(altPct)}</td>
         <td class="pct-cell" style="font-family:var(--mono);font-size:12px;">${fmt(altAmt)}</td>
       </tr>
       <tr>
         <td><span class="safe-dot"></span>채권/안전</td>
-        <td class="pct-cell">~32%</td>
+        <td class="pct-cell">${fmtPct(targetSafePct)}</td>
         <td class="pct-cell">${fmtPct(safePct)}</td>
         <td class="pct-cell" style="font-family:var(--mono);font-size:12px;">${fmt(safeTotal)}</td>
       </tr>
@@ -1920,7 +1674,9 @@ function renderSummary() {
   // Risk ratio gauge
   const gaugeEl = document.getElementById('risk-ratio-display');
   if (gaugeEl) {
-    const riskColor = riskPct >= 63 && riskPct <= 73 ? 'var(--green)' : riskPct >= 58 && riskPct <= 78 ? 'var(--amber)' : 'var(--red)';
+    const targetRiskPct = targetStockPct + targetAltPct;
+    const halfRange = 5;
+    const riskColor = Math.abs(riskPct - targetRiskPct) <= halfRange ? 'var(--green)' : Math.abs(riskPct - targetRiskPct) <= halfRange * 2 ? 'var(--amber)' : 'var(--red)';
     gaugeEl.innerHTML = `
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
         <div style="flex:1;">
@@ -1939,7 +1695,7 @@ function renderSummary() {
         </div>
       </div>
       <div style="font-size:12px;color:var(--text-secondary);">
-        목표: 위험 <strong style="color:var(--risk-color)">~68%</strong> / 안전 <strong style="color:var(--safe-color)">~32%</strong>
+        목표: 위험 <strong style="color:var(--risk-color)">${fmtPct(targetRiskPct)}</strong> / 안전 <strong style="color:var(--safe-color)">${fmtPct(targetSafePct)}</strong>
         &nbsp;&nbsp;→&nbsp;&nbsp;
         현재: 위험 <strong style="color:${riskColor}">${fmtPct(riskPct)}</strong> / 안전 <strong style="color:var(--safe-color)">${fmtPct(safePct)}</strong>
       </div>
@@ -1949,9 +1705,9 @@ function renderSummary() {
   // Currency exposure (실시간 계산)
   const currencyEl = document.getElementById('currency-tbody');
   if (currencyEl) {
-    // 목표 비중: GLOBAL_TARGETS 기준
+    // 목표 비중: 동적 계산 기준
     const targetCur = { USD: 0, KRW: 0, GOLD: 0, CNY: 0, OTHER_DM: 0 };
-    Object.entries(GLOBAL_TARGETS).forEach(([etf, pct]) => {
+    Object.entries(dynamicTargets).forEach(([etf, pct]) => {
       const map = CURRENCY_MAP[etf];
       if (map) Object.entries(map).forEach(([c, r]) => { targetCur[c] += pct * r; });
     });
@@ -2029,11 +1785,129 @@ function updateLastUpdated() {
 }
 
 // =============================================
+// RENDER DCA
+// =============================================
+function renderDca() {
+  const { totalRounds, completedRounds } = DCA_CONFIG;
+  const remainingRounds = totalRounds - completedRounds;
+  const progressPct = totalRounds > 0 ? (completedRounds / totalRounds * 100) : 0;
+
+  // 완료 케이스
+  if (remainingRounds <= 0) {
+    document.getElementById('dca-content').innerHTML = `
+      <div class="info-box" style="border-left-color:var(--green);margin-top:8px;">
+        <strong>분할매수 완료</strong><br>
+        ${totalRounds}회 분할매수를 모두 완료했습니다. 이후 연간 납입 시 목표 대비 낮은 ETF에 우선 배분하세요.
+      </div>`;
+    return;
+  }
+
+  // 계좌별 매수·매도 통합 계획 계산
+  let grandTotalBuyGap = 0;
+  let grandTotalSellGap = 0;
+  const accPlans = ACCOUNTS.map(acc => {
+    const accountTotal = acc.holdings.reduce((s, h) => s + h.defaultAmt, 0);
+    const items = [];
+    acc.holdings.forEach(h => {
+      const targetAmt = accountTotal * h.targetPct / 100;
+      const gap = targetAmt - h.defaultAmt; // 양수=매수필요, 음수=매도필요
+      if (Math.abs(gap) > 0.5) {
+        items.push({ etf: h.etf, targetAmt, currentAmt: h.defaultAmt, gap, perRound: gap / remainingRounds });
+      }
+    });
+    // 매수 먼저, 그 다음 매도 순으로 정렬
+    items.sort((a, b) => b.gap - a.gap);
+    const buyPerRound = items.filter(x => x.gap > 0).reduce((s, x) => s + x.perRound, 0);
+    const sellPerRound = items.filter(x => x.gap < 0).reduce((s, x) => s + Math.abs(x.perRound), 0);
+    grandTotalBuyGap += items.filter(x => x.gap > 0).reduce((s, x) => s + x.gap, 0);
+    grandTotalSellGap += items.filter(x => x.gap < 0).reduce((s, x) => s + Math.abs(x.gap), 0);
+    return { acc, items, buyPerRound, sellPerRound };
+  }).filter(p => p.items.length > 0);
+
+  // 계좌별 통합 카드 HTML
+  const cardsHtml = accPlans.map(({ acc, items, buyPerRound, sellPerRound }) => {
+    const rowsHtml = items.map(item => {
+      const isBuy = item.gap > 0;
+      const actionColor = isBuy ? 'var(--gold)' : 'var(--red)';
+      const actionLabel = isBuy ? '매수' : '매도';
+      const gapAbs = Math.abs(item.gap);
+      const perRoundAbs = Math.abs(item.perRound);
+      const gapColor = isBuy ? 'var(--gold)' : 'var(--red)';
+      return `
+      <tr>
+        <td><div class="etf-name">${item.etf}</div></td>
+        <td class="pct-cell" style="color:var(--text-secondary)">${Math.round(item.targetAmt).toLocaleString('ko-KR')}만</td>
+        <td class="pct-cell" style="color:var(--text-secondary)">${Math.round(item.currentAmt).toLocaleString('ko-KR')}만</td>
+        <td class="pct-cell" style="color:${gapColor}">${isBuy ? '+' : '−'}${Math.round(gapAbs).toLocaleString('ko-KR')}만</td>
+        <td class="pct-cell" style="color:${actionColor};font-weight:700">
+          <span style="font-size:10px;opacity:0.7;margin-right:2px;">${actionLabel}</span>${Math.round(perRoundAbs).toLocaleString('ko-KR')}만
+        </td>
+      </tr>`;
+    }).join('');
+
+    const summaryParts = [];
+    if (buyPerRound > 0.5) summaryParts.push(`<span style="color:var(--gold)">매수 ${Math.round(buyPerRound).toLocaleString('ko-KR')}만</span>`);
+    if (sellPerRound > 0.5) summaryParts.push(`<span style="color:var(--red)">매도 ${Math.round(sellPerRound).toLocaleString('ko-KR')}만</span>`);
+
+    return `
+      <div class="contrib-card" style="margin-bottom:0">
+        <div class="contrib-title">${acc.label} <span style="font-size:13px;color:var(--text-muted);font-weight:400">1회 ${summaryParts.join(' · ')}</span></div>
+        <div class="table-wrap" style="margin-top:8px;">
+          <table>
+            <thead>
+              <tr>
+                <th>ETF</th>
+                <th class="right">목표금액</th>
+                <th class="right">현재금액</th>
+                <th class="right">차이</th>
+                <th class="right">1회 실행</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('dca-content').innerHTML = `
+    <!-- 진행 현황 -->
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">
+          진행 현황
+          <span style="font-size:12px;font-weight:400;color:var(--text-secondary);margin-left:8px;">
+            매수 잔여 <strong style="color:var(--gold)">${Math.round(grandTotalBuyGap).toLocaleString('ko-KR')}만원</strong>
+            &nbsp;·&nbsp;
+            매도 잔여 <strong style="color:var(--red)">${Math.round(grandTotalSellGap).toLocaleString('ko-KR')}만원</strong>
+          </span>
+        </div>
+        <span style="font-family:var(--mono);font-size:13px;color:var(--text-primary)">
+          <strong>${completedRounds}</strong> / ${totalRounds}회 완료
+          &nbsp;·&nbsp; 잔여 <strong>${remainingRounds}</strong>회
+        </span>
+      </div>
+      <div style="background:var(--bg-card);border-radius:4px;height:8px;overflow:hidden;">
+        <div style="background:var(--gold);height:100%;width:${progressPct.toFixed(1)}%;transition:width 0.3s;"></div>
+      </div>
+    </div>
+
+    <!-- 계좌별 매수·매도 계획 -->
+    <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">
+      계좌별 ETF 매수·매도 계획
+      <span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:6px;">(잔여 ${remainingRounds}회 균등 분할 기준)</span>
+    </div>
+    <div class="grid-2" style="margin-bottom:16px;">
+      ${cardsHtml}
+    </div>`;
+}
+
+// =============================================
 // INIT
 // =============================================
 function init() {
   ACCOUNTS.forEach(acc => renderAccount(acc.id));
   renderSummary();
+  renderDca();
   updateLastUpdated();
 }
 
