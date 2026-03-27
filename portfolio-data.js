@@ -54,13 +54,14 @@ const ACCOUNTS = [
     },
     {
         id: 'pension1',
-        label: '연금저축1', // 미국+중국+인도
+        label: '연금저축1', // 공격적 알파 추구
         irpSafetyRequired: false,
         holdings: [
-            {etf: 'KODEX 미국S&P500', targetPct: 50, purchaseCost: 228, currentCost: 226},
-            {etf: 'TIGER 차이나항셍테크', targetPct: 20, purchaseCost: 91, currentCost: 90},
+            {etf: 'KODEX 미국나스닥100', targetPct: 40, purchaseCost: 0, currentCost: 0},
+            {etf: 'KODEX 미국S&P500', targetPct: 0, purchaseCost: 228, currentCost: 226},
+            {etf: 'TIGER 차이나항셍테크', targetPct: 25, purchaseCost: 91, currentCost: 90},
             {etf: 'KODEX 차이나AI테크액티브', targetPct: 10, purchaseCost: 0, currentCost: 0},
-            {etf: 'TIGER 인도니프티50', targetPct: 20, purchaseCost: 0, currentCost: 0},
+            {etf: 'TIGER 인도니프티50', targetPct: 25, purchaseCost: 0, currentCost: 0},
             {etf: 'TIGER CD금리투자KIS', targetPct: 0, purchaseCost: 1825, currentCost: 1827},
             {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 0, purchaseCost: 136, currentCost: 134},
             {etf: '현금', targetPct: 0, purchaseCost: 13, currentCost: 13},
@@ -82,12 +83,13 @@ const ACCOUNTS = [
     },
     {
         id: 'irp-retire',
-        label: 'IRP 퇴직연금',  // 나스닥 코어
+        label: 'IRP 퇴직연금',  // 선진국 베타 추종
         irpSafetyRequired: true,
         holdings: [
-            {etf: 'KODEX 미국나스닥100', targetPct: 40, purchaseCost: 376, currentCost: 371},
-            {etf: 'KODEX MSCI선진국', targetPct: 30, purchaseCost: 0, currentCost: 0},
+            {etf: 'KODEX 미국S&P500', targetPct: 50, purchaseCost: 0, currentCost: 0},
+            {etf: 'KODEX MSCI선진국', targetPct: 20, purchaseCost: 0, currentCost: 0},
             {etf: 'KODEX 종합채권(AA-이상)', targetPct: 30, purchaseCost: 224, currentCost: 223},
+            {etf: 'KODEX 미국나스닥100', targetPct: 0, purchaseCost: 376, currentCost: 371},
             {etf: 'TIGER 차이나항셍테크', targetPct: 0, purchaseCost: 19, currentCost: 18},
             {etf: 'PLUS 신흥국MSCI(합성H)', targetPct: 0, purchaseCost: 113, currentCost: 111},
             {etf: 'KODEX CD금리액티브', targetPct: 0, purchaseCost: 2901, currentCost: 2904},
