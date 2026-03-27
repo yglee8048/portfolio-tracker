@@ -1,1428 +1,1713 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>포트폴리오 리밸런싱 트래커</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #080c14;
-  --surface-0: #0d1220;
-  --surface-1: #111829;
-  --surface-2: #192135;
-  --surface-3: #1e2940;
-  --border: #2a3650;
-  --border-light: #344060;
-  --text-primary: #dde4f0;
-  --text-secondary: #8a9bb8;
-  --text-muted: #4d5e7a;
-  --gold: #e8b84b;
-  --gold-dim: #a07828;
-  --green: #2eca8e;
-  --green-bg: rgba(46,202,142,0.08);
-  --amber: #f0a030;
-  --amber-bg: rgba(240,160,48,0.08);
-  --red: #e85555;
-  --red-bg: rgba(232,85,85,0.08);
-  --safe-color: #5b9cf0;
-  --safe-bg: rgba(91,156,240,0.08);
-  --risk-color: #e8b84b;
-  --accent: #4a80f0;
-  --radius: 10px;
-  --radius-sm: 6px;
-  --mono: 'JetBrains Mono', monospace;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background: var(--bg);
-  color: var(--text-primary);
-  min-height: 100vh;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--surface-0); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
-
-/* HEADER */
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--surface-0);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  backdrop-filter: blur(10px);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.logo {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--gold) 0%, #c8821a 100%);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--bg);
-  font-family: var(--mono);
-  flex-shrink: 0;
-}
-
-.header-title {
-  font-family: 'Noto Serif KR', serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
-}
-
-.header-subtitle {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-family: var(--mono);
-  margin-top: 1px;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.header-stat {
-  text-align: right;
-}
-
-.header-stat-value {
-  font-family: var(--mono);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--gold);
-}
-
-.header-stat-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* NAV TABS */
-.nav {
-  background: var(--surface-0);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex;
-  gap: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.nav::-webkit-scrollbar { display: none; }
-
-.nav-tab {
-  padding: 14px 18px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  user-select: none;
-}
-
-.nav-tab:hover { color: var(--text-primary); }
-
-.nav-tab.active {
-  color: var(--gold);
-  border-bottom-color: var(--gold);
-}
-
-.nav-tab .tab-amount {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-muted);
-  background: var(--surface-2);
-  padding: 2px 6px;
-  border-radius: 10px;
-}
-
-.nav-tab.active .tab-amount {
-  background: rgba(232,184,75,0.12);
-  color: var(--gold-dim);
-}
-
-/* MAIN CONTENT */
-.main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-/* PANELS */
-.panel { display: none; animation: fadeIn 0.25s ease; }
-.panel.active { display: block; }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ACCOUNT CARD */
-.account-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.account-title-group {}
-.account-name {
-  font-family: 'Noto Serif KR', serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-.account-subtitle {
-  font-size: 13px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
-  font-family: var(--mono);
-}
-.badge-irp { background: rgba(91,156,240,0.12); color: var(--safe-color); border: 1px solid rgba(91,156,240,0.2); }
-.badge-pension { background: rgba(232,184,75,0.1); color: var(--gold); border: 1px solid rgba(232,184,75,0.2); }
-.badge-isa { background: rgba(46,202,142,0.1); color: var(--green); border: 1px solid rgba(46,202,142,0.2); }
-
-.account-stats {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.stat-box {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  text-align: right;
-}
-.stat-box-value {
-  font-family: var(--mono);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.stat-box-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-top: 2px;
-}
-
-/* IRP COMPLIANCE BADGE */
-.irp-compliance {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid;
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 16px;
-}
-.irp-compliance.ok { background: var(--green-bg); border-color: rgba(46,202,142,0.25); color: var(--green); }
-.irp-compliance.fail { background: var(--red-bg); border-color: rgba(232,85,85,0.25); color: var(--red); }
-
-.irp-compliance .check-icon {
-  font-size: 16px;
-}
-
-/* REBALANCING TABLE */
-.table-wrap {
-  overflow-x: auto;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead tr {
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--border);
-}
-
-thead th {
-  padding: 10px 14px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  white-space: nowrap;
-}
-
-thead th.right { text-align: right; }
-
-tbody tr {
-  border-bottom: 1px solid var(--border);
-  transition: background 0.15s;
-}
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: var(--surface-2); }
-
-tbody tr.highlight-warn { background: rgba(240,160,48,0.04); }
-tbody tr.highlight-warn:hover { background: rgba(240,160,48,0.08); }
-tbody tr.highlight-danger { background: rgba(232,85,85,0.04); }
-tbody tr.highlight-danger:hover { background: rgba(232,85,85,0.08); }
-
-td {
-  padding: 11px 14px;
-  vertical-align: middle;
-}
-
-.etf-name {
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.etf-ticker {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 1px;
-}
-
-.safe-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--safe-color);
-  margin-right: 4px;
-  vertical-align: middle;
-}
-.risk-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--risk-color);
-  margin-right: 4px;
-  vertical-align: middle;
-}
-
-.pct-cell {
-  font-family: var(--mono);
-  font-size: 13px;
-  text-align: right;
-}
-
-.diff-cell {
-  font-family: var(--mono);
-  font-size: 12px;
-  text-align: right;
-}
-
-.diff-pos { color: var(--green); }
-.diff-neg { color: var(--red); }
-.diff-zero { color: var(--text-muted); }
-
-/* AMOUNT INPUT */
-.amount-input-wrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.amount-input {
-  background: var(--surface-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-family: var(--mono);
-  font-size: 13px;
-  padding: 6px 30px 6px 10px;
-  width: 100px;
-  text-align: right;
-  transition: border-color 0.15s, background 0.15s;
-  outline: none;
-}
-
-.amount-input:focus {
-  border-color: var(--gold);
-  background: var(--surface-2);
-}
-
-.amount-input:focus + .input-suffix,
-.amount-input:hover + .input-suffix {
-  color: var(--gold);
-}
-
-.input-suffix {
-  position: absolute;
-  right: 8px;
-  font-size: 11px;
-  color: var(--text-muted);
-  font-family: var(--mono);
-  pointer-events: none;
-  transition: color 0.15s;
-}
-
-/* STACKED INPUT (현재가 + 원금) */
-.input-stack { display: flex; flex-direction: column; gap: 3px; }
-.input-row { display: flex; align-items: center; gap: 5px; }
-.input-label { font-size: 10px; color: var(--text-muted); min-width: 26px; flex-shrink: 0; }
-.return-chip {
-  display: inline-block;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 8px;
-}
-.return-pos { color: var(--green); background: var(--green-bg); }
-.return-neg { color: var(--red); background: var(--red-bg); }
-.return-zero { color: var(--text-muted); }
-
-/* ACTION CHIP */
-.action-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.action-buy { background: var(--green-bg); color: var(--green); border: 1px solid rgba(46,202,142,0.2); }
-.action-sell { background: var(--red-bg); color: var(--red); border: 1px solid rgba(232,85,85,0.2); }
-.action-ok { background: var(--surface-3); color: var(--text-muted); border: 1px solid var(--border); }
-.action-warn { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(240,160,48,0.25); }
-
-/* TARGET BAR */
-.bar-wrap {
-  width: 80px;
-  height: 4px;
-  background: var(--surface-3);
-  border-radius: 2px;
-  overflow: hidden;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 6px;
-}
-.bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.4s ease;
-}
-.bar-green { background: var(--green); }
-.bar-amber { background: var(--amber); }
-.bar-red { background: var(--red); }
-
-/* RATIO GAUGE */
-.ratio-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--surface-2);
-  border-top: 1px solid var(--border);
-  font-size: 13px;
-}
-.ratio-label { color: var(--text-secondary); }
-.ratio-value { font-family: var(--mono); font-weight: 600; }
-.ratio-bar {
-  flex: 1;
-  height: 6px;
-  background: var(--surface-3);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.ratio-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--safe-color) 0%, var(--risk-color) 100%);
-  transition: width 0.4s ease;
-}
-
-/* SECTION TITLE */
-.section-title {
-  font-family: 'Noto Serif KR', serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 6px;
-}
-.section-desc {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-bottom: 20px;
-}
-
-/* GRID */
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-@media (max-width: 700px) {
-  .grid-2 { grid-template-columns: 1fr; }
-  .main { padding: 16px; }
-  .account-stats { gap: 10px; }
-}
-
-/* SUMMARY LEGEND */
-.legend {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-/* CONTRIBUTION SECTION */
-.contrib-card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 16px;
-}
-
-.contrib-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.contrib-amount {
-  font-family: var(--mono);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--gold);
-  margin: 8px 0;
-}
-
-.contrib-note {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-.contrib-etfs {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.contrib-etf-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-
-.contrib-etf-name {
-  font-size: 13px;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.contrib-etf-reason {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.contrib-etf-pct {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* TOTAL SUMMARY ROW */
-.total-row td {
-  background: var(--surface-2);
-  font-weight: 600;
-  border-top: 2px solid var(--border);
-}
-
-/* DIVIDER */
-.divider {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 24px 0;
-}
-
-/* TYPE INDICATOR */
-.risk-label {
-  font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-family: var(--mono);
-  font-weight: 600;
-}
-.risk-safe  { background: var(--safe-bg); color: var(--safe-color); }
-.risk-stock { background: rgba(232,184,75,0.1); color: var(--risk-color); }
-.risk-alt   { background: rgba(46,202,142,0.1); color: var(--green); }
-
-/* TOOLTIP */
-.tooltip-wrap {
-  position: relative;
-  display: inline-block;
-}
-.tooltip {
-  display: none;
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--surface-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font-size: 11px;
-  color: var(--text-primary);
-  white-space: nowrap;
-  z-index: 200;
-  pointer-events: none;
-}
-.tooltip-wrap:hover .tooltip { display: block; }
-
-/* INFO BOX */
-.info-box {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--gold);
-  border-radius: var(--radius-sm);
-  padding: 12px 16px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-bottom: 16px;
-  line-height: 1.7;
-}
-
-/* HIGHLIGHT DIFF */
-td.cell-green { color: var(--green); }
-td.cell-amber { color: var(--amber); }
-td.cell-red { color: var(--red); }
-
-/* BREAKDOWN MINI BARS for summary */
-.mini-bar-container {
-  display: flex;
-  gap: 2px;
-  align-items: center;
-  min-width: 80px;
-}
-.mini-bar-segment {
-  height: 6px;
-  border-radius: 1px;
-  transition: width 0.4s ease;
-}
-
-/* Last updated */
-.last-updated {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-/* Button */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text-secondary);
-  transition: all 0.15s;
-  font-family: 'Noto Sans KR', sans-serif;
-}
-.btn:hover {
-  background: var(--surface-3);
-  color: var(--text-primary);
-  border-color: var(--border-light);
-}
-.btn-reset {
-  border-color: rgba(232,184,75,0.3);
-  color: var(--gold-dim);
-}
-.btn-reset:hover {
-  background: rgba(232,184,75,0.08);
-  color: var(--gold);
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포트폴리오 리밸런싱 트래커</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080c14;
+            --surface-0: #0d1220;
+            --surface-1: #111829;
+            --surface-2: #192135;
+            --surface-3: #1e2940;
+            --border: #2a3650;
+            --border-light: #344060;
+            --text-primary: #dde4f0;
+            --text-secondary: #8a9bb8;
+            --text-muted: #4d5e7a;
+            --gold: #e8b84b;
+            --gold-dim: #a07828;
+            --green: #2eca8e;
+            --green-bg: rgba(46, 202, 142, 0.08);
+            --amber: #f0a030;
+            --amber-bg: rgba(240, 160, 48, 0.08);
+            --red: #e85555;
+            --red-bg: rgba(232, 85, 85, 0.08);
+            --safe-color: #5b9cf0;
+            --safe-bg: rgba(91, 156, 240, 0.08);
+            --risk-color: #e8b84b;
+            --accent: #4a80f0;
+            --radius: 10px;
+            --radius-sm: 6px;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--surface-0);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-light);
+        }
+
+        /* HEADER */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--surface-0);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--gold) 0%, #c8821a 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--bg);
+            font-family: var(--mono);
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--mono);
+            margin-top: 1px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-stat {
+            text-align: right;
+        }
+
+        .header-stat-value {
+            font-family: var(--mono);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .header-stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* NAV TABS */
+        .nav {
+            background: var(--surface-0);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tab {
+            padding: 14px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-tab.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        .nav-tab .tab-amount {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-muted);
+            background: var(--surface-2);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .nav-tab.active .tab-amount {
+            background: rgba(232, 184, 75, 0.12);
+            color: var(--gold-dim);
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* PANELS */
+        .panel {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ACCOUNT CARD */
+        .account-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .account-title-group {
+        }
+
+        .account-name {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .account-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            font-family: var(--mono);
+        }
+
+        .badge-irp {
+            background: rgba(91, 156, 240, 0.12);
+            color: var(--safe-color);
+            border: 1px solid rgba(91, 156, 240, 0.2);
+        }
+
+        .badge-pension {
+            background: rgba(232, 184, 75, 0.1);
+            color: var(--gold);
+            border: 1px solid rgba(232, 184, 75, 0.2);
+        }
+
+        .badge-isa {
+            background: rgba(46, 202, 142, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(46, 202, 142, 0.2);
+        }
+
+        .account-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 16px;
+            text-align: right;
+        }
+
+        .stat-box-value {
+            font-family: var(--mono);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-box-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-top: 2px;
+        }
+
+        /* IRP COMPLIANCE BADGE */
+        .irp-compliance {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .irp-compliance.ok {
+            background: var(--green-bg);
+            border-color: rgba(46, 202, 142, 0.25);
+            color: var(--green);
+        }
+
+        .irp-compliance.fail {
+            background: var(--red-bg);
+            border-color: rgba(232, 85, 85, 0.25);
+            color: var(--red);
+        }
+
+        .irp-compliance .check-icon {
+            font-size: 16px;
+        }
+
+        /* REBALANCING TABLE */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface-1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        thead th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            white-space: nowrap;
+        }
+
+        thead th.right {
+            text-align: right;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: var(--surface-2);
+        }
+
+        tbody tr.highlight-warn {
+            background: rgba(240, 160, 48, 0.04);
+        }
+
+        tbody tr.highlight-warn:hover {
+            background: rgba(240, 160, 48, 0.08);
+        }
+
+        tbody tr.highlight-danger {
+            background: rgba(232, 85, 85, 0.04);
+        }
+
+        tbody tr.highlight-danger:hover {
+            background: rgba(232, 85, 85, 0.08);
+        }
+
+        td {
+            padding: 11px 14px;
+            vertical-align: middle;
+        }
+
+        .etf-name {
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .etf-ticker {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .safe-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--safe-color);
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .risk-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--risk-color);
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .pct-cell {
+            font-family: var(--mono);
+            font-size: 13px;
+            text-align: right;
+        }
+
+        .diff-cell {
+            font-family: var(--mono);
+            font-size: 12px;
+            text-align: right;
+        }
+
+        .diff-pos {
+            color: var(--green);
+        }
+
+        .diff-neg {
+            color: var(--red);
+        }
+
+        .diff-zero {
+            color: var(--text-muted);
+        }
+
+        /* AMOUNT INPUT */
+        .amount-input-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .amount-input {
+            background: var(--surface-3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--mono);
+            font-size: 13px;
+            padding: 6px 30px 6px 10px;
+            width: 100px;
+            text-align: right;
+            transition: border-color 0.15s, background 0.15s;
+            outline: none;
+        }
+
+        .amount-input:focus {
+            border-color: var(--gold);
+            background: var(--surface-2);
+        }
+
+        .amount-input:focus + .input-suffix,
+        .amount-input:hover + .input-suffix {
+            color: var(--gold);
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--mono);
+            pointer-events: none;
+            transition: color 0.15s;
+        }
+
+        /* STACKED INPUT (현재가 + 원금) */
+        .input-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .input-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            min-width: 26px;
+            flex-shrink: 0;
+        }
+
+        .return-chip {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 8px;
+        }
+
+        .return-pos {
+            color: var(--green);
+            background: var(--green-bg);
+        }
+
+        .return-neg {
+            color: var(--red);
+            background: var(--red-bg);
+        }
+
+        .return-zero {
+            color: var(--text-muted);
+        }
+
+        /* ACTION CHIP */
+        .action-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .action-buy {
+            background: var(--green-bg);
+            color: var(--green);
+            border: 1px solid rgba(46, 202, 142, 0.2);
+        }
+
+        .action-sell {
+            background: var(--red-bg);
+            color: var(--red);
+            border: 1px solid rgba(232, 85, 85, 0.2);
+        }
+
+        .action-ok {
+            background: var(--surface-3);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .action-warn {
+            background: var(--amber-bg);
+            color: var(--amber);
+            border: 1px solid rgba(240, 160, 48, 0.25);
+        }
+
+        /* TARGET BAR */
+        .bar-wrap {
+            width: 80px;
+            height: 4px;
+            background: var(--surface-3);
+            border-radius: 2px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        .bar-green {
+            background: var(--green);
+        }
+
+        .bar-amber {
+            background: var(--amber);
+        }
+
+        .bar-red {
+            background: var(--red);
+        }
+
+        /* RATIO GAUGE */
+        .ratio-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--surface-2);
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .ratio-label {
+            color: var(--text-secondary);
+        }
+
+        .ratio-value {
+            font-family: var(--mono);
+            font-weight: 600;
+        }
+
+        .ratio-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--surface-3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .ratio-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--safe-color) 0%, var(--risk-color) 100%);
+            transition: width 0.4s ease;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        /* GRID */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 700px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .main {
+                padding: 16px;
+            }
+
+            .account-stats {
+                gap: 10px;
+            }
+        }
+
+        /* SUMMARY LEGEND */
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* CONTRIBUTION SECTION */
+        .contrib-card {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .contrib-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contrib-amount {
+            font-family: var(--mono);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 8px 0;
+        }
+
+        .contrib-note {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .contrib-etfs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .contrib-etf-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .contrib-etf-name {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .contrib-etf-reason {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .contrib-etf-pct {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* TOTAL SUMMARY ROW */
+        .total-row td {
+            background: var(--surface-2);
+            font-weight: 600;
+            border-top: 2px solid var(--border);
+        }
+
+        /* DIVIDER */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 24px 0;
+        }
+
+        /* TYPE INDICATOR */
+        .risk-label {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-family: var(--mono);
+            font-weight: 600;
+        }
+
+        .risk-safe {
+            background: var(--safe-bg);
+            color: var(--safe-color);
+        }
+
+        .risk-stock {
+            background: rgba(232, 184, 75, 0.1);
+            color: var(--risk-color);
+        }
+
+        .risk-alt {
+            background: rgba(46, 202, 142, 0.1);
+            color: var(--green);
+        }
+
+        /* TOOLTIP */
+        .tooltip-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface-3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 6px 10px;
+            font-size: 11px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        .tooltip-wrap:hover .tooltip {
+            display: block;
+        }
+
+        /* INFO BOX */
+        .info-box {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--gold);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+
+        /* HIGHLIGHT DIFF */
+        td.cell-green {
+            color: var(--green);
+        }
+
+        td.cell-amber {
+            color: var(--amber);
+        }
+
+        td.cell-red {
+            color: var(--red);
+        }
+
+        /* BREAKDOWN MINI BARS for summary */
+        .mini-bar-container {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            min-width: 80px;
+        }
+
+        .mini-bar-segment {
+            height: 6px;
+            border-radius: 1px;
+            transition: width 0.4s ease;
+        }
+
+        /* Last updated */
+        .last-updated {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Button */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text-secondary);
+            transition: all 0.15s;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .btn:hover {
+            background: var(--surface-3);
+            color: var(--text-primary);
+            border-color: var(--border-light);
+        }
+
+        .btn-reset {
+            border-color: rgba(232, 184, 75, 0.3);
+            color: var(--gold-dim);
+        }
+
+        .btn-reset:hover {
+            background: rgba(232, 184, 75, 0.08);
+            color: var(--gold);
+        }
+    </style>
 </head>
 <body>
 
 <header class="header">
-  <div class="header-left">
-    <div class="logo">₩</div>
-    <div>
-      <div class="header-title">포트폴리오 리밸런싱 트래커</div>
-      <div class="header-subtitle">10 ETFs · 5 Accounts · 장기투자 플랜</div>
+    <div class="header-left">
+        <div class="logo">₩</div>
+        <div>
+            <div class="header-title">포트폴리오 리밸런싱 트래커</div>
+            <div class="header-subtitle">10 ETFs · 5 Accounts · 장기투자 플랜</div>
+        </div>
     </div>
-  </div>
-  <div class="header-right">
-    <div class="header-stat">
-      <div class="header-stat-value" id="header-total">17,419만원</div>
-      <div class="header-stat-label">총 자산</div>
+    <div class="header-right">
+        <div class="header-stat">
+            <div class="header-stat-value" id="header-total">17,419만원</div>
+            <div class="header-stat-label">총 자산</div>
+        </div>
+        <div class="last-updated" id="last-updated">—</div>
     </div>
-    <div class="last-updated" id="last-updated">—</div>
-  </div>
 </header>
 
 <nav class="nav">
-  <div class="nav-tab active" data-panel="summary" onclick="switchPanel('summary')">
-    전체 요약
-  </div>
-  <div class="nav-tab" data-panel="isa" onclick="switchPanel('isa')">
-    ISA
-    <span class="tab-amount" id="tab-amount-isa"></span>
-  </div>
-  <div class="nav-tab" data-panel="pension1" onclick="switchPanel('pension1')">
-    연금저축1
-    <span class="tab-amount" id="tab-amount-pension1"></span>
-  </div>
-  <div class="nav-tab" data-panel="pension2" onclick="switchPanel('pension2')">
-    연금저축2
-    <span class="tab-amount" id="tab-amount-pension2"></span>
-  </div>
-  <div class="nav-tab" data-panel="irp-retire" onclick="switchPanel('irp-retire')">
-    IRP 퇴직연금
-    <span class="tab-amount" id="tab-amount-irp-retire"></span>
-  </div>
-  <div class="nav-tab" data-panel="irp-personal" onclick="switchPanel('irp-personal')">
-    IRP 개인연금
-    <span class="tab-amount" id="tab-amount-irp-personal"></span>
-  </div>
-  <div class="nav-tab" data-panel="contrib" onclick="switchPanel('contrib')">
-    연간 기여금
-  </div>
-  <div class="nav-tab" data-panel="dca" onclick="switchPanel('dca')">
-    분할매수·매도 계획
-  </div>
-  <div class="nav-tab" data-panel="notes" onclick="switchPanel('notes')">
-    투자 노트
-  </div>
+    <div class="nav-tab active" data-panel="summary" onclick="switchPanel('summary')">
+        전체 요약
+    </div>
+    <div class="nav-tab" data-panel="isa" onclick="switchPanel('isa')">
+        ISA
+        <span class="tab-amount" id="tab-amount-isa"></span>
+    </div>
+    <div class="nav-tab" data-panel="pension1" onclick="switchPanel('pension1')">
+        연금저축1
+        <span class="tab-amount" id="tab-amount-pension1"></span>
+    </div>
+    <div class="nav-tab" data-panel="pension2" onclick="switchPanel('pension2')">
+        연금저축2
+        <span class="tab-amount" id="tab-amount-pension2"></span>
+    </div>
+    <div class="nav-tab" data-panel="irp-retire" onclick="switchPanel('irp-retire')">
+        IRP 퇴직연금
+        <span class="tab-amount" id="tab-amount-irp-retire"></span>
+    </div>
+    <div class="nav-tab" data-panel="irp-personal" onclick="switchPanel('irp-personal')">
+        IRP 개인연금
+        <span class="tab-amount" id="tab-amount-irp-personal"></span>
+    </div>
+    <div class="nav-tab" data-panel="contrib" onclick="switchPanel('contrib')">
+        연간 기여금
+    </div>
+    <div class="nav-tab" data-panel="dca" onclick="switchPanel('dca')">
+        분할매수·매도 계획
+    </div>
+    <div class="nav-tab" data-panel="notes" onclick="switchPanel('notes')">
+        투자 노트
+    </div>
 </nav>
 
 <main class="main">
 
-  <!-- ===== SUMMARY PANEL ===== -->
-  <div class="panel active" id="panel-summary">
-    <div class="section-title">전체 포트폴리오 현황</div>
-    <div class="section-desc">10개 ETF · 5개 계좌 합산 기준. 목표 대비 편차 ±2%p 이내 ✓, ±5%p 이내 △, 초과 ⚠ · 현재 CD금리 100% (분할매수 진행 중)</div>
-
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>±2%p 이내 (양호)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>±2~5%p (주의)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>±5%p 초과 (조정 필요)</div>
-    </div>
-
-    <div class="table-wrap" style="margin-bottom:20px;">
-      <table>
-        <thead>
-          <tr>
-            <th>ETF</th>
-            <th class="right">목표</th>
-            <th class="right">현재</th>
-            <th class="right">차이</th>
-            <th class="right">금액 합계</th>
-            <th class="right">수익률</th>
-            <th>상태</th>
-          </tr>
-        </thead>
-        <tbody id="summary-tbody"></tbody>
-        <tfoot>
-          <tr class="total-row">
-            <td><strong>합계</strong></td>
-            <td class="pct-cell">100.0%</td>
-            <td class="pct-cell" id="summary-total-pct">—</td>
-            <td></td>
-            <td class="pct-cell" id="summary-total-amt">—</td>
-            <td class="pct-cell" id="summary-total-return">—</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-    <div class="grid-2">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>자산 구분</th><th class="right">목표</th><th class="right">현재</th><th class="right">금액</th></tr></thead>
-          <tbody id="summary-asset-tbody"></tbody>
-        </table>
-      </div>
-      <div style="background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
-        <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">위험/안전 자산 비율</div>
-        <div id="risk-ratio-display" style="margin-bottom:12px;"></div>
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.7;" id="ratio-note">
-          IRP 2개 계좌 안전자산 30% 의무로 인한 구조적 초과분 포함.
+    <!-- ===== SUMMARY PANEL ===== -->
+    <div class="panel active" id="panel-summary">
+        <div class="section-title">전체 포트폴리오 현황</div>
+        <div class="section-desc">10개 ETF · 5개 계좌 합산 기준. 목표 대비 편차 ±2%p 이내 ✓, ±5%p 이내 △, 초과 ⚠ · 현재 CD금리 100% (분할매수 진행
+            중)
         </div>
-      </div>
-    </div>
 
-    <!-- 환 노출 비중 -->
-    <div style="margin-top:20px;">
-      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">환 노출 비중</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">통화별 목표 대비 현재 노출 비중 (근사치)</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>통화</th><th class="right">목표</th><th class="right">현재</th><th>해당 자산</th></tr>
-          </thead>
-          <tbody id="currency-tbody"></tbody>
-        </table>
-      </div>
-      <div class="info-box" style="margin-top:10px;">
-        <strong>ISA 만기 이후</strong> (새 ISA 2,000만 재시작 · 5,381만 부동산 편입 시): USD ~43% → <strong>~55%</strong> 증가 · KRW ~43% → <strong>~25%</strong> 감소. ISA 채권·현금 해지 + 부동산이 실물자산으로 대체되는 효과.
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== ISA PANEL ===== -->
-  <div class="panel" id="panel-isa">
-    <div class="account-header">
-      <div class="account-title-group">
-        <div class="account-name">ISA <span style="font-size:14px;color:var(--text-secondary);">(개인종합자산관리계좌)</span></div>
-        <div class="account-subtitle">
-          <span class="badge badge-isa">단기 / 안정</span>
-          배당 인컴 코어 — 내년 전액 매도 예정
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background:var(--green)"></div>
+                ±2%p 이내 (양호)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:var(--amber)"></div>
+                ±2~5%p (주의)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:var(--red)"></div>
+                ±5%p 초과 (조정 필요)
+            </div>
         </div>
-      </div>
-      <div class="account-stats">
-        <div class="stat-box">
-          <div class="stat-box-value" id="isa-total">—</div>
-          <div class="stat-box-label">계좌 잔액</div>
+
+        <div class="table-wrap" style="margin-bottom:20px;">
+            <table>
+                <thead>
+                <tr>
+                    <th>ETF</th>
+                    <th class="right">목표</th>
+                    <th class="right">현재</th>
+                    <th class="right">차이</th>
+                    <th class="right">금액 합계</th>
+                    <th class="right">수익률</th>
+                    <th>상태</th>
+                </tr>
+                </thead>
+                <tbody id="summary-tbody"></tbody>
+                <tfoot>
+                <tr class="total-row">
+                    <td><strong>합계</strong></td>
+                    <td class="pct-cell">100.0%</td>
+                    <td class="pct-cell" id="summary-total-pct">—</td>
+                    <td></td>
+                    <td class="pct-cell" id="summary-total-amt">—</td>
+                    <td class="pct-cell" id="summary-total-return">—</td>
+                    <td></td>
+                </tr>
+                </tfoot>
+            </table>
         </div>
-        <button class="btn btn-reset" onclick="resetAccount('isa')">↺ 기본값 복원</button>
-      </div>
-    </div>
-    <div class="info-box">내년 전액 매도 예정. 미국배당 다우존스 40%를 코어로 ISA 비과세 배당 혜택 극대화. 만기 후 → 새 ISA 2,000만 + 연금저축1 300만 + 부동산 준비 5,381만으로 분배.</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ETF</th>
-            <th>분류</th>
-            <th class="right">목표 비율</th>
-            <th class="right">현재가 / 원금</th>
-            <th class="right">수익률</th>
-            <th class="right">현재 비율</th>
-            <th class="right">차이</th>
-            <th>조정 액션</th>
-          </tr>
-        </thead>
-        <tbody id="isa-tbody"></tbody>
-      </table>
-      <div class="ratio-row" id="isa-ratio-row"></div>
 
-    </div>
-  </div>
-
-  <!-- ===== IRP 퇴직 PANEL ===== -->
-  <div class="panel" id="panel-irp-retire">
-    <div class="account-header">
-      <div class="account-title-group">
-        <div class="account-name">IRP 퇴직연금</div>
-        <div class="account-subtitle">
-          <span class="badge badge-irp">장기 / 공격</span>
-          나스닥 코어 성장 — 안전자산 30% 의무 (종합채권)
+        <div class="grid-2">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>자산 구분</th>
+                        <th class="right">목표</th>
+                        <th class="right">현재</th>
+                        <th class="right">금액</th>
+                    </tr>
+                    </thead>
+                    <tbody id="summary-asset-tbody"></tbody>
+                </table>
+            </div>
+            <div style="background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+                <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">
+                    위험/안전 자산 비율
+                </div>
+                <div id="risk-ratio-display" style="margin-bottom:12px;"></div>
+                <div style="font-size:12px;color:var(--text-muted);line-height:1.7;" id="ratio-note">
+                    IRP 2개 계좌 안전자산 30% 의무로 인한 구조적 초과분 포함.
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="account-stats">
-        <div class="stat-box">
-          <div class="stat-box-value" id="irp-retire-total">—</div>
-          <div class="stat-box-label">계좌 잔액</div>
+
+        <!-- 환 노출 비중 -->
+        <div style="margin-top:20px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">환 노출 비중</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">통화별 목표 대비 현재 노출 비중 (근사치)</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>통화</th>
+                        <th class="right">목표</th>
+                        <th class="right">현재</th>
+                        <th>해당 자산</th>
+                    </tr>
+                    </thead>
+                    <tbody id="currency-tbody"></tbody>
+                </table>
+            </div>
+            <div class="info-box" style="margin-top:10px;">
+                <strong>ISA 만기 이후</strong> (새 ISA 2,000만 재시작 · 5,381만 부동산 편입 시): USD ~43% → <strong>~55%</strong> 증가 ·
+                KRW ~43% → <strong>~25%</strong> 감소. ISA 채권·현금 해지 + 부동산이 실물자산으로 대체되는 효과.
+            </div>
         </div>
-        <button class="btn btn-reset" onclick="resetAccount('irp-retire')">↺ 기본값 복원</button>
-      </div>
     </div>
-    <div class="irp-compliance" id="irp-retire-compliance"></div>
-    <div class="info-box">나스닥100 50%를 코어로 IT·성장주 장기 복리에 집중. PLUS 신흥국MSCI로 신흥국 분산, 차이나항셍테크로 중국 성장 위성 배치. KODEX 선진국(MSCI World)은 나스닥과 미국 70% 중복이므로 제외. 이직 시 단발 유입 → 재조정 최소화, 장기 방치형. 이직 입금 시 나스닥 고점이면 채권 비중을 일시 40%로 상향 후 단계적 환원 고려.</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ETF</th>
-            <th>분류</th>
-            <th class="right">목표 비율</th>
-            <th class="right">현재가 / 원금</th>
-            <th class="right">수익률</th>
-            <th class="right">현재 비율</th>
-            <th class="right">차이</th>
-            <th>조정 액션</th>
-          </tr>
-        </thead>
-        <tbody id="irp-retire-tbody"></tbody>
-      </table>
-      <div class="ratio-row" id="irp-retire-ratio-row"></div>
-    </div>
-  </div>
 
-  <!-- ===== IRP 개인 PANEL ===== -->
-  <div class="panel" id="panel-irp-personal">
-    <div class="account-header">
-      <div class="account-title-group">
-        <div class="account-name">IRP 개인연금</div>
-        <div class="account-subtitle">
-          <span class="badge badge-irp">장기 / 공격</span>
-          세계 분산 투자 — 안전자산 30% 의무 (종합채권)
+    <!-- ===== ISA PANEL ===== -->
+    <div class="panel" id="panel-isa">
+        <div class="account-header">
+            <div class="account-title-group">
+                <div class="account-name">ISA <span
+                        style="font-size:14px;color:var(--text-secondary);">(개인종합자산관리계좌)</span></div>
+                <div class="account-subtitle">
+                    <span class="badge badge-isa">단기 / 안정</span>
+                    배당 인컴 코어 — 내년 전액 매도 예정
+                </div>
+            </div>
+            <div class="account-stats">
+                <div class="stat-box">
+                    <div class="stat-box-value" id="isa-total">—</div>
+                    <div class="stat-box-label">계좌 잔액</div>
+                </div>
+                <button class="btn btn-reset" onclick="resetAccount('isa')">↺ 기본값 복원</button>
+            </div>
         </div>
-      </div>
-      <div class="account-stats">
-        <div class="stat-box">
-          <div class="stat-box-value" id="irp-personal-total">—</div>
-          <div class="stat-box-label">계좌 잔액</div>
+        <div class="info-box">내년 전액 매도 예정. 미국배당 다우존스 40%를 코어로 ISA 비과세 배당 혜택 극대화. 만기 후 → 새 ISA 2,000만 + 연금저축1 300만 + 부동산
+            준비 5,381만으로 분배.
         </div>
-        <button class="btn btn-reset" onclick="resetAccount('irp-personal')">↺ 기본값 복원</button>
-      </div>
-    </div>
-    <div class="irp-compliance" id="irp-personal-compliance"></div>
-    <div class="info-box">KODEX 선진국MSCI World(선진국) + PLUS 신흥국MSCI(합성H)(신흥국)으로 전 세계 커버. 중국은 신흥국 내 30% 내포분(~9%)으로만 노출. 특정 국가 오버웨이트 없는 순수 글로벌 분산. 5개 계좌 중 유일하게 선진국 지수를 코어로 사용. 매년 300만 납입 → 하락 자산(선진국 or 신흥국) 위주 매수로 자동 리밸런싱.</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ETF</th>
-            <th>분류</th>
-            <th class="right">목표 비율</th>
-            <th class="right">현재가 / 원금</th>
-            <th class="right">수익률</th>
-            <th class="right">현재 비율</th>
-            <th class="right">차이</th>
-            <th>조정 액션</th>
-          </tr>
-        </thead>
-        <tbody id="irp-personal-tbody"></tbody>
-      </table>
-      <div class="ratio-row" id="irp-personal-ratio-row"></div>
-    </div>
-  </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ETF</th>
+                    <th>분류</th>
+                    <th class="right">목표 비율</th>
+                    <th class="right">현재가 / 원금</th>
+                    <th class="right">수익률</th>
+                    <th class="right">현재 비율</th>
+                    <th class="right">차이</th>
+                    <th>조정 액션</th>
+                </tr>
+                </thead>
+                <tbody id="isa-tbody"></tbody>
+            </table>
+            <div class="ratio-row" id="isa-ratio-row"></div>
 
-  <!-- ===== 연금저축1 PANEL ===== -->
-  <div class="panel" id="panel-pension1">
-    <div class="account-header">
-      <div class="account-title-group">
-        <div class="account-name">연금저축펀드 1</div>
-        <div class="account-subtitle">
-          <span class="badge badge-pension">장기 / 공격</span>
-          S&P500 + 중국 양대 코어 — 100% 주식
         </div>
-      </div>
-      <div class="account-stats">
-        <div class="stat-box">
-          <div class="stat-box-value" id="pension1-total">—</div>
-          <div class="stat-box-label">계좌 잔액</div>
+    </div>
+
+    <!-- ===== IRP 퇴직 PANEL ===== -->
+    <div class="panel" id="panel-irp-retire">
+        <div class="account-header">
+            <div class="account-title-group">
+                <div class="account-name">IRP 퇴직연금</div>
+                <div class="account-subtitle">
+                    <span class="badge badge-irp">장기 / 공격</span>
+                    나스닥 코어 성장 — 안전자산 30% 의무 (종합채권)
+                </div>
+            </div>
+            <div class="account-stats">
+                <div class="stat-box">
+                    <div class="stat-box-value" id="irp-retire-total">—</div>
+                    <div class="stat-box-label">계좌 잔액</div>
+                </div>
+                <button class="btn btn-reset" onclick="resetAccount('irp-retire')">↺ 기본값 복원</button>
+            </div>
         </div>
-        <button class="btn btn-reset" onclick="resetAccount('pension1')">↺ 기본값 복원</button>
-      </div>
-    </div>
-    <div class="info-box">안전자산 의무 없음. 100% 주식. 연간 600만원 납입 — S&P500 우선 배분, 하락 자산 위주 리밸런싱. 중국 리스크 상승 시 차이나항셍테크 → PLUS 신흥국MSCI(합성H) 전환 고려. 실질 중국 노출 약 29% 주의.</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ETF</th>
-            <th>분류</th>
-            <th class="right">목표 비율</th>
-            <th class="right">현재가 / 원금</th>
-            <th class="right">수익률</th>
-            <th class="right">현재 비율</th>
-            <th class="right">차이</th>
-            <th>조정 액션</th>
-          </tr>
-        </thead>
-        <tbody id="pension1-tbody"></tbody>
-      </table>
-      <div class="ratio-row" id="pension1-ratio-row"></div>
-    </div>
-  </div>
-
-  <!-- ===== 연금저축2 PANEL ===== -->
-  <div class="panel" id="panel-pension2">
-    <div class="account-header">
-      <div class="account-title-group">
-        <div class="account-name">연금저축펀드 2</div>
-        <div class="account-subtitle">
-          <span class="badge badge-pension">중기 / 균형</span>
-          올웨더 4자산 균형 — 주식 45% · 실물 30% · 채권/현금 25%
+        <div class="irp-compliance" id="irp-retire-compliance"></div>
+        <div class="info-box">나스닥100 50%를 코어로 IT·성장주 장기 복리에 집중. PLUS 신흥국MSCI로 신흥국 분산, 차이나항셍테크로 중국 성장 위성 배치. KODEX
+            선진국(MSCI World)은 나스닥과 미국 70% 중복이므로 제외. 이직 시 단발 유입 → 재조정 최소화, 장기 방치형. 이직 입금 시 나스닥 고점이면 채권 비중을 일시 40%로 상향 후
+            단계적 환원 고려.
         </div>
-      </div>
-      <div class="account-stats">
-        <div class="stat-box">
-          <div class="stat-box-value" id="pension2-total">—</div>
-          <div class="stat-box-label">계좌 잔액</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ETF</th>
+                    <th>분류</th>
+                    <th class="right">목표 비율</th>
+                    <th class="right">현재가 / 원금</th>
+                    <th class="right">수익률</th>
+                    <th class="right">현재 비율</th>
+                    <th class="right">차이</th>
+                    <th>조정 액션</th>
+                </tr>
+                </thead>
+                <tbody id="irp-retire-tbody"></tbody>
+            </table>
+            <div class="ratio-row" id="irp-retire-ratio-row"></div>
         </div>
-        <button class="btn btn-reset" onclick="resetAccount('pension2')">↺ 기본값 복원</button>
-      </div>
     </div>
-    <div class="info-box">경기 4국면(성장·침체·인플레·디플레) 동시 커버. 매매 이벤트 최소화, 연 1회 비중 점검. 연간 900만원 납입 (조건부). 부동산 취득 후 포트폴리오 성격 재검토 필요.</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ETF</th>
-            <th>분류</th>
-            <th class="right">목표 비율</th>
-            <th class="right">현재가 / 원금</th>
-            <th class="right">수익률</th>
-            <th class="right">현재 비율</th>
-            <th class="right">차이</th>
-            <th>조정 액션</th>
-          </tr>
-        </thead>
-        <tbody id="pension2-tbody"></tbody>
-      </table>
-      <div class="ratio-row" id="pension2-ratio-row"></div>
-    </div>
-  </div>
 
-  <!-- ===== CONTRIBUTION PANEL ===== -->
-  <div class="panel" id="panel-contrib">
-    <div class="section-title">연간 기여금 배분 가이드</div>
-    <div class="section-desc">포트폴리오 목표 비율에 더 가까워지도록 신규 자금 배분 방향을 안내합니다.</div>
-
-    <div class="contrib-card">
-      <div class="contrib-title">
-        연금저축펀드 1
-        <span class="badge badge-pension">S&P500 + 중국 + 신흥국</span>
-      </div>
-      <div class="contrib-amount">연간 +600만원</div>
-      <div class="contrib-note">하락 자산 위주 배분으로 자동 리밸런싱. 중국 리스크 상승 시 차이나 → 신흥국 전환 고려.</div>
-      <div class="contrib-etfs">
-        <div class="contrib-etf-row">
-          <div>
-            <div class="contrib-etf-name">KODEX 미국S&P500</div>
-            <div class="contrib-etf-reason">미국 코어 50% — 가장 큰 비중, 우선 확보</div>
-          </div>
-          <div>
-            <div class="contrib-etf-pct" style="color:var(--green)">우선 1순위</div>
-          </div>
+    <!-- ===== IRP 개인 PANEL ===== -->
+    <div class="panel" id="panel-irp-personal">
+        <div class="account-header">
+            <div class="account-title-group">
+                <div class="account-name">IRP 개인연금</div>
+                <div class="account-subtitle">
+                    <span class="badge badge-irp">장기 / 공격</span>
+                    세계 분산 투자 — 안전자산 30% 의무 (종합채권)
+                </div>
+            </div>
+            <div class="account-stats">
+                <div class="stat-box">
+                    <div class="stat-box-value" id="irp-personal-total">—</div>
+                    <div class="stat-box-label">계좌 잔액</div>
+                </div>
+                <button class="btn btn-reset" onclick="resetAccount('irp-personal')">↺ 기본값 복원</button>
+            </div>
         </div>
-        <div class="contrib-etf-row">
-          <div>
-            <div class="contrib-etf-name">TIGER MSCI신흥국</div>
-            <div class="contrib-etf-reason">EM 분산 30% — 하락 시 집중 매수</div>
-          </div>
-          <div>
-            <div class="contrib-etf-pct" style="color:var(--amber)">2순위</div>
-          </div>
+        <div class="irp-compliance" id="irp-personal-compliance"></div>
+        <div class="info-box">KODEX 선진국MSCI World(선진국) + PLUS 신흥국MSCI(합성H)(신흥국)으로 전 세계 커버. 중국은 신흥국 내 30% 내포분(~9%)으로만 노출.
+            특정 국가 오버웨이트 없는 순수 글로벌 분산. 5개 계좌 중 유일하게 선진국 지수를 코어로 사용. 매년 300만 납입 → 하락 자산(선진국 or 신흥국) 위주 매수로 자동 리밸런싱.
         </div>
-        <div class="contrib-etf-row">
-          <div>
-            <div class="contrib-etf-name">TIGER 차이나항셍테크</div>
-            <div class="contrib-etf-reason">중국 코어 20% — 실질 노출 약 29% 주의</div>
-          </div>
-          <div>
-            <div class="contrib-etf-pct" style="color:var(--text-muted)">3순위</div>
-          </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ETF</th>
+                    <th>분류</th>
+                    <th class="right">목표 비율</th>
+                    <th class="right">현재가 / 원금</th>
+                    <th class="right">수익률</th>
+                    <th class="right">현재 비율</th>
+                    <th class="right">차이</th>
+                    <th>조정 액션</th>
+                </tr>
+                </thead>
+                <tbody id="irp-personal-tbody"></tbody>
+            </table>
+            <div class="ratio-row" id="irp-personal-ratio-row"></div>
         </div>
-      </div>
     </div>
 
-    <div class="contrib-card">
-      <div class="contrib-title">
-        연금저축펀드 2
-        <span class="badge badge-pension">올웨더 4자산</span>
-      </div>
-      <div class="contrib-amount">연간 +900만원 (조건부)</div>
-      <div class="contrib-note">경기 4국면 대응 — 주식 45% · 채권/현금 25% · 실물자산 30%. 매매 최소화, 연 1회 점검.</div>
-      <div class="contrib-etfs">
-        <div class="contrib-etf-row">
-          <div>
-            <div class="contrib-etf-name">KODEX 미국S&P500 + TIGER 미국배당 다우존스</div>
-            <div class="contrib-etf-reason">주식 45% (S&P500 30% + 배당 15%) — 경기 성장 · 방어</div>
-          </div>
-          <div>
-            <div class="contrib-etf-pct" style="color:var(--green)">45%</div>
-          </div>
+    <!-- ===== 연금저축1 PANEL ===== -->
+    <div class="panel" id="panel-pension1">
+        <div class="account-header">
+            <div class="account-title-group">
+                <div class="account-name">연금저축펀드 1</div>
+                <div class="account-subtitle">
+                    <span class="badge badge-pension">장기 / 공격</span>
+                    S&P500 + 중국 양대 코어 — 100% 주식
+                </div>
+            </div>
+            <div class="account-stats">
+                <div class="stat-box">
+                    <div class="stat-box-value" id="pension1-total">—</div>
+                    <div class="stat-box-label">계좌 잔액</div>
+                </div>
+                <button class="btn btn-reset" onclick="resetAccount('pension1')">↺ 기본값 복원</button>
+            </div>
         </div>
-        <div class="contrib-etf-row">
-          <div>
-            <div class="contrib-etf-name">ACE KRX금현물 + TIGER 글로벌자원생산기업</div>
-            <div class="contrib-etf-reason">실물자산 30% — 인플레 · 위기 헤지</div>
-          </div>
-          <div>
-            <div class="contrib-etf-pct" style="color:var(--amber)">30%</div>
-          </div>
+        <div class="info-box">안전자산 의무 없음. 100% 주식. 연간 600만원 납입 — S&P500 우선 배분, 하락 자산 위주 리밸런싱. 중국 리스크 상승 시 차이나항셍테크 → PLUS
+            신흥국MSCI(합성H) 전환 고려. 실질 중국 노출 약 29% 주의.
         </div>
-        <div class="contrib-etf-row">
-          <div>
-            <div class="contrib-etf-name">KODEX 종합채권 + CD금리액티브</div>
-            <div class="contrib-etf-reason">채권/현금 25% — 경기 침체 · 디플레 방어</div>
-          </div>
-          <div>
-            <div class="contrib-etf-pct" style="color:var(--safe-color)">25%</div>
-          </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ETF</th>
+                    <th>분류</th>
+                    <th class="right">목표 비율</th>
+                    <th class="right">현재가 / 원금</th>
+                    <th class="right">수익률</th>
+                    <th class="right">현재 비율</th>
+                    <th class="right">차이</th>
+                    <th>조정 액션</th>
+                </tr>
+                </thead>
+                <tbody id="pension1-tbody"></tbody>
+            </table>
+            <div class="ratio-row" id="pension1-ratio-row"></div>
         </div>
-      </div>
     </div>
 
-    <div class="contrib-card">
-      <div class="contrib-title">
-        IRP 개인연금
-        <span class="badge badge-irp">세계 분산 투자</span>
-      </div>
-      <div class="contrib-amount">연간 +300만원</div>
-      <div class="contrib-note">가장 단순한 계좌 (3종목). 납입 시 하락한 자산 위주 매수로 자동 리밸런싱.</div>
-      <div class="contrib-etfs">
-        <div class="contrib-etf-row">
-          <div>
-            <div class="contrib-etf-name">KODEX 선진국MSCI World (40%) · PLUS 신흥국MSCI(합성H) (30%) · KODEX 종합채권 (30%)</div>
-            <div class="contrib-etf-reason">하락 자산 위주 배분. IRP 안전자산 30% 준수.</div>
-          </div>
-          <div>
-            <div class="contrib-etf-pct" style="color:var(--safe-color)">비율 유지</div>
-          </div>
+    <!-- ===== 연금저축2 PANEL ===== -->
+    <div class="panel" id="panel-pension2">
+        <div class="account-header">
+            <div class="account-title-group">
+                <div class="account-name">연금저축펀드 2</div>
+                <div class="account-subtitle">
+                    <span class="badge badge-pension">중기 / 균형</span>
+                    올웨더 4자산 균형 — 주식 45% · 실물 30% · 채권/현금 25%
+                </div>
+            </div>
+            <div class="account-stats">
+                <div class="stat-box">
+                    <div class="stat-box-value" id="pension2-total">—</div>
+                    <div class="stat-box-label">계좌 잔액</div>
+                </div>
+                <button class="btn btn-reset" onclick="resetAccount('pension2')">↺ 기본값 복원</button>
+            </div>
         </div>
-      </div>
-    </div>
-
-    <div class="contrib-card">
-      <div class="contrib-title">
-        ISA
-        <span class="badge badge-isa">배당 인컴 코어</span>
-      </div>
-      <div class="contrib-amount">내년 전액 매도 후 → 새 ISA 2,000만원 재시작</div>
-      <div class="contrib-note">해지 후 구조: 미국배당 40% · CD금리 25% · 종합채권 20% · 금 15%. 만기 1~2개월 전 환율 모니터링.</div>
-      <div class="contrib-etfs">
-        <div class="contrib-etf-row">
-          <div>
-            <div class="contrib-etf-name">TIGER 미국배당 다우존스 40% + CD금리 25% + 종합채권 20% + KRX금 15%</div>
-            <div class="contrib-etf-reason">ISA 비과세 배당 혜택 극대화. 원화 강세 시 달러 자산 비중 조절 고려.</div>
-          </div>
-          <div>
-            <div class="contrib-etf-pct" style="color:var(--text-muted)">재설정</div>
-          </div>
+        <div class="info-box">경기 4국면(성장·침체·인플레·디플레) 동시 커버. 매매 이벤트 최소화, 연 1회 비중 점검. 연간 900만원 납입 (조건부). 부동산 취득 후 포트폴리오 성격
+            재검토 필요.
         </div>
-      </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ETF</th>
+                    <th>분류</th>
+                    <th class="right">목표 비율</th>
+                    <th class="right">현재가 / 원금</th>
+                    <th class="right">수익률</th>
+                    <th class="right">현재 비율</th>
+                    <th class="right">차이</th>
+                    <th>조정 액션</th>
+                </tr>
+                </thead>
+                <tbody id="pension2-tbody"></tbody>
+            </table>
+            <div class="ratio-row" id="pension2-ratio-row"></div>
+        </div>
     </div>
 
-    <hr class="divider">
+    <!-- ===== CONTRIBUTION PANEL ===== -->
+    <div class="panel" id="panel-contrib">
+        <div class="section-title">연간 기여금 배분 가이드</div>
+        <div class="section-desc">포트폴리오 목표 비율에 더 가까워지도록 신규 자금 배분 방향을 안내합니다.</div>
 
-    <div class="info-box" style="border-left-color:var(--safe-color);">
-      <strong>리밸런싱 원칙</strong><br>
-      1. 연 1회 전체 계좌 잔액 기준으로 각 ETF 현재 비율 계산<br>
-      2. 계좌 내 목표 비율과 ±5%p 이탈 시 조정 (예: 목표 20% → 15% 이하 또는 25% 이상이면 리밸런싱)<br>
-      3. IRP는 안전자산 30% 이상 항상 유지 — 리밸런싱 시 안전자산 먼저 확보<br>
-      4. 신규 자금 유입 시 목표 대비 낮은 ETF에 우선 배분 (매매 없이 리밸런싱 가능)
+        <div class="contrib-card">
+            <div class="contrib-title">
+                연금저축펀드 1
+                <span class="badge badge-pension">S&P500 + 중국 + 신흥국</span>
+            </div>
+            <div class="contrib-amount">연간 +600만원</div>
+            <div class="contrib-note">하락 자산 위주 배분으로 자동 리밸런싱. 중국 리스크 상승 시 차이나 → 신흥국 전환 고려.</div>
+            <div class="contrib-etfs">
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">KODEX 미국S&P500</div>
+                        <div class="contrib-etf-reason">미국 코어 50% — 가장 큰 비중, 우선 확보</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--green)">우선 1순위</div>
+                    </div>
+                </div>
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">TIGER MSCI신흥국</div>
+                        <div class="contrib-etf-reason">EM 분산 30% — 하락 시 집중 매수</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--amber)">2순위</div>
+                    </div>
+                </div>
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">TIGER 차이나항셍테크</div>
+                        <div class="contrib-etf-reason">중국 코어 20% — 실질 노출 약 29% 주의</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--text-muted)">3순위</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="contrib-card">
+            <div class="contrib-title">
+                연금저축펀드 2
+                <span class="badge badge-pension">올웨더 4자산</span>
+            </div>
+            <div class="contrib-amount">연간 +900만원 (조건부)</div>
+            <div class="contrib-note">경기 4국면 대응 — 주식 45% · 채권/현금 25% · 실물자산 30%. 매매 최소화, 연 1회 점검.</div>
+            <div class="contrib-etfs">
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">KODEX 미국S&P500 + TIGER 미국배당 다우존스</div>
+                        <div class="contrib-etf-reason">주식 45% (S&P500 30% + 배당 15%) — 경기 성장 · 방어</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--green)">45%</div>
+                    </div>
+                </div>
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">ACE KRX금현물 + TIGER 글로벌자원생산기업</div>
+                        <div class="contrib-etf-reason">실물자산 30% — 인플레 · 위기 헤지</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--amber)">30%</div>
+                    </div>
+                </div>
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">KODEX 종합채권 + CD금리액티브</div>
+                        <div class="contrib-etf-reason">채권/현금 25% — 경기 침체 · 디플레 방어</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--safe-color)">25%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="contrib-card">
+            <div class="contrib-title">
+                IRP 개인연금
+                <span class="badge badge-irp">세계 분산 투자</span>
+            </div>
+            <div class="contrib-amount">연간 +300만원</div>
+            <div class="contrib-note">가장 단순한 계좌 (3종목). 납입 시 하락한 자산 위주 매수로 자동 리밸런싱.</div>
+            <div class="contrib-etfs">
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">KODEX 선진국MSCI World (40%) · PLUS 신흥국MSCI(합성H) (30%) · KODEX 종합채권
+                            (30%)
+                        </div>
+                        <div class="contrib-etf-reason">하락 자산 위주 배분. IRP 안전자산 30% 준수.</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--safe-color)">비율 유지</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="contrib-card">
+            <div class="contrib-title">
+                ISA
+                <span class="badge badge-isa">배당 인컴 코어</span>
+            </div>
+            <div class="contrib-amount">내년 전액 매도 후 → 새 ISA 2,000만원 재시작</div>
+            <div class="contrib-note">해지 후 구조: 미국배당 40% · CD금리 25% · 종합채권 20% · 금 15%. 만기 1~2개월 전 환율 모니터링.</div>
+            <div class="contrib-etfs">
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">TIGER 미국배당 다우존스 40% + CD금리 25% + 종합채권 20% + KRX금 15%</div>
+                        <div class="contrib-etf-reason">ISA 비과세 배당 혜택 극대화. 원화 강세 시 달러 자산 비중 조절 고려.</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--text-muted)">재설정</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="info-box" style="border-left-color:var(--safe-color);">
+            <strong>리밸런싱 원칙</strong><br>
+            1. 연 1회 전체 계좌 잔액 기준으로 각 ETF 현재 비율 계산<br>
+            2. 계좌 내 목표 비율과 ±5%p 이탈 시 조정 (예: 목표 20% → 15% 이하 또는 25% 이상이면 리밸런싱)<br>
+            3. IRP는 안전자산 30% 이상 항상 유지 — 리밸런싱 시 안전자산 먼저 확보<br>
+            4. 신규 자금 유입 시 목표 대비 낮은 ETF에 우선 배분 (매매 없이 리밸런싱 가능)
+        </div>
     </div>
-  </div>
 
-  <!-- ===== DCA 분할매수·매도 계획 PANEL ===== -->
-  <div class="panel" id="panel-dca">
-    <div class="section-title">분할매수·매도 계획</div>
-    <div id="dca-content"><!-- renderDca() 가 채움 --></div>
+    <!-- ===== DCA 분할매수·매도 계획 PANEL ===== -->
+    <div class="panel" id="panel-dca">
+        <div class="section-title">분할매수·매도 계획</div>
+        <div id="dca-content"><!-- renderDca() 가 채움 --></div>
 
-  </div>
-
-
-  <!-- ===== 투자 노트 PANEL ===== -->
-  <div class="panel" id="panel-notes">
-    <div class="section-title">투자 노트</div>
-    <div class="section-desc">포트폴리오 설계 철학 · 리스크 · 운용 가이드</div>
-
-    <!-- 잘 설계된 점 -->
-    <div style="margin-bottom:28px;">
-      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">잘 설계된 점</div>
-
-      <div class="info-box" style="margin-bottom:10px;">
-        <strong>① 계좌별 독립 철학 확립</strong><br>
-        5개 계좌가 각자 명확한 테마를 가지고 독립 리밸런싱 가능. 한 계좌의 시장 충격이 다른 계좌 전략을 흔들지 않음.
-      </div>
-      <div class="table-wrap" style="margin-bottom:10px;">
-        <table>
-          <thead><tr><th>계좌</th><th>테마</th><th>핵심 차별점</th></tr></thead>
-          <tbody>
-            <tr><td>IRP 퇴직연금</td><td style="color:var(--text-secondary)">나스닥 코어</td><td style="font-size:12px;color:var(--text-secondary)">나스닥 50% 단독 집중</td></tr>
-            <tr><td>IRP 개인연금</td><td style="color:var(--text-secondary)">세계 분산</td><td style="font-size:12px;color:var(--text-secondary)">선진국+신흥국 코어, 3종목 최소 구조</td></tr>
-            <tr><td>연금저축펀드1</td><td style="color:var(--text-secondary)">S&P500 + 중국</td><td style="font-size:12px;color:var(--text-secondary)">미국·중국 양대 코어, 채권 0%</td></tr>
-            <tr><td>연금저축펀드2</td><td style="color:var(--text-secondary)">올웨더 4자산</td><td style="font-size:12px;color:var(--text-secondary)">실물자산 30%, 4국면 대응</td></tr>
-            <tr><td>ISA</td><td style="color:var(--text-secondary)">배당 인컴 코어</td><td style="font-size:12px;color:var(--text-secondary)">비과세 배당 극대화, 만기 특화</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="info-box" style="margin-bottom:10px;">
-        <strong>② 세금 최적화</strong><br>
-        해외 ETF(나스닥·S&P500·MSCI 등)를 연금계좌에 집중 → 배당소득세 22%를 연금소득세 3.3~5.5%로 절세. ISA 내 미국배당 다우존스 40% → 배당소득 비과세 혜택 극대화.
-      </div>
-
-      <div class="info-box" style="margin-bottom:10px;">
-        <strong>③ 인덱스 구성 기반 중복 제거</strong><br>
-        KODEX 선진국(MSCI World 미국 70%)과 나스닥/S&P500 중복 배제. PLUS 신흥국MSCI 내 중국 30% 내포 고려한 차이나항셍테크 비중 조정.
-      </div>
-
-      <div class="info-box">
-        <strong>④ ISA 해지 계획 명확화</strong><br>
-        부동산 준비 자금(5,381만)이 별도로 확보되어 연금저축펀드2가 순수 중기 투자 계좌로 역할 정립.
-      </div>
     </div>
 
-    <hr class="divider">
 
-    <!-- 리스크 및 주의사항 -->
-    <div style="margin-bottom:28px;">
-      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">리스크 및 주의사항</div>
+    <!-- ===== 투자 노트 PANEL ===== -->
+    <div class="panel" id="panel-notes">
+        <div class="section-title">투자 노트</div>
+        <div class="section-desc">포트폴리오 설계 철학 · 리스크 · 운용 가이드</div>
 
-      <div class="info-box" style="border-left-color:var(--amber);margin-bottom:10px;">
-        <strong>① ISA 만기 환율 리스크</strong><br>
-        미국배당 다우존스 40%(3,072만원)는 달러 자산. 만기 시점 원달러 환율에 따라 수익률 변동. 만기 1~2개월 전부터 환율 모니터링 → 급격한 원화 강세 시 종합채권이나 CD금리로 일부 전환 고려.
-      </div>
+        <!-- 잘 설계된 점 -->
+        <div style="margin-bottom:28px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">잘 설계된 점</div>
 
-      <div class="info-box" style="border-left-color:var(--amber);margin-bottom:10px;">
-        <strong>② ISA 만기 후 USD 노출 급증</strong><br>
-        ISA 해지 후 KRW 채권·현금이 빠져나가면 전체 USD 노출 ~43% → <strong>~55%</strong> 수준으로 상승. 이 시점에 IRP·연금저축 계좌 비중을 종합 점검 권장.
-      </div>
+            <div class="info-box" style="margin-bottom:10px;">
+                <strong>① 계좌별 독립 철학 확립</strong><br>
+                5개 계좌가 각자 명확한 테마를 가지고 독립 리밸런싱 가능. 한 계좌의 시장 충격이 다른 계좌 전략을 흔들지 않음.
+            </div>
+            <div class="table-wrap" style="margin-bottom:10px;">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>계좌</th>
+                        <th>테마</th>
+                        <th>핵심 차별점</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>IRP 퇴직연금</td>
+                        <td style="color:var(--text-secondary)">나스닥 코어</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">나스닥 50% 단독 집중</td>
+                    </tr>
+                    <tr>
+                        <td>IRP 개인연금</td>
+                        <td style="color:var(--text-secondary)">세계 분산</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">선진국+신흥국 코어, 3종목 최소 구조</td>
+                    </tr>
+                    <tr>
+                        <td>연금저축펀드1</td>
+                        <td style="color:var(--text-secondary)">S&P500 + 중국</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">미국·중국 양대 코어, 채권 0%</td>
+                    </tr>
+                    <tr>
+                        <td>연금저축펀드2</td>
+                        <td style="color:var(--text-secondary)">올웨더 4자산</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">실물자산 30%, 4국면 대응</td>
+                    </tr>
+                    <tr>
+                        <td>ISA</td>
+                        <td style="color:var(--text-secondary)">배당 인컴 코어</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">비과세 배당 극대화, 만기 특화</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
-      <div class="info-box" style="border-left-color:var(--red);margin-bottom:10px;">
-        <strong>③ 중국 리스크 편중</strong><br>
-        연금저축펀드1의 실질 중국 노출 <strong>~29%</strong> (차이나항셍테크 20% + PLUS신흥국 내포 ~9%). 미·중 갈등, 지정학 이슈 발생 시 동 계좌 집중 타격 가능. 연 600만 납입 시 차이나항셍테크 ↔ PLUS신흥국 비중으로 조절 권장.
-      </div>
+            <div class="info-box" style="margin-bottom:10px;">
+                <strong>② 세금 최적화</strong><br>
+                해외 ETF(나스닥·S&P500·MSCI 등)를 연금계좌에 집중 → 배당소득세 22%를 연금소득세 3.3~5.5%로 절세. ISA 내 미국배당 다우존스 40% → 배당소득 비과세 혜택
+                극대화.
+            </div>
 
-      <div class="info-box" style="border-left-color:var(--text-muted);">
-        <strong>④ 부동산 취득 후 연금저축펀드2 방향 재검토</strong><br>
-        5,381만원이 부동산으로 편입되면 연금저축펀드2는 주택 준비와 무관한 순수 투자 계좌가 됨. 올웨더 구조를 유지할지, 좀 더 공격적인 구조로 전환할지 재검토 필요.
-      </div>
+            <div class="info-box" style="margin-bottom:10px;">
+                <strong>③ 인덱스 구성 기반 중복 제거</strong><br>
+                KODEX 선진국(MSCI World 미국 70%)과 나스닥/S&P500 중복 배제. PLUS 신흥국MSCI 내 중국 30% 내포 고려한 차이나항셍테크 비중 조정.
+            </div>
+
+            <div class="info-box">
+                <strong>④ ISA 해지 계획 명확화</strong><br>
+                부동산 준비 자금(5,381만)이 별도로 확보되어 연금저축펀드2가 순수 중기 투자 계좌로 역할 정립.
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- 리스크 및 주의사항 -->
+        <div style="margin-bottom:28px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">리스크 및 주의사항</div>
+
+            <div class="info-box" style="border-left-color:var(--amber);margin-bottom:10px;">
+                <strong>① ISA 만기 환율 리스크</strong><br>
+                미국배당 다우존스 40%(3,072만원)는 달러 자산. 만기 시점 원달러 환율에 따라 수익률 변동. 만기 1~2개월 전부터 환율 모니터링 → 급격한 원화 강세 시 종합채권이나 CD금리로
+                일부 전환 고려.
+            </div>
+
+            <div class="info-box" style="border-left-color:var(--amber);margin-bottom:10px;">
+                <strong>② ISA 만기 후 USD 노출 급증</strong><br>
+                ISA 해지 후 KRW 채권·현금이 빠져나가면 전체 USD 노출 ~43% → <strong>~55%</strong> 수준으로 상승. 이 시점에 IRP·연금저축 계좌 비중을 종합 점검
+                권장.
+            </div>
+
+            <div class="info-box" style="border-left-color:var(--red);margin-bottom:10px;">
+                <strong>③ 중국 리스크 편중</strong><br>
+                연금저축펀드1의 실질 중국 노출 <strong>~29%</strong> (차이나항셍테크 20% + PLUS신흥국 내포 ~9%). 미·중 갈등, 지정학 이슈 발생 시 동 계좌 집중 타격
+                가능. 연 600만 납입 시 차이나항셍테크 ↔ PLUS신흥국 비중으로 조절 권장.
+            </div>
+
+            <div class="info-box" style="border-left-color:var(--text-muted);">
+                <strong>④ 부동산 취득 후 연금저축펀드2 방향 재검토</strong><br>
+                5,381만원이 부동산으로 편입되면 연금저축펀드2는 주택 준비와 무관한 순수 투자 계좌가 됨. 올웨더 구조를 유지할지, 좀 더 공격적인 구조로 전환할지 재검토 필요.
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- 계좌별 운용 가이드 -->
+        <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">계좌별 운용 가이드</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>계좌</th>
+                        <th>리밸런싱 시점</th>
+                        <th>방법</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><strong>IRP 퇴직연금</strong></td>
+                        <td style="font-size:12px;color:var(--text-secondary)">연 1회 점검 / 이직 입금 시</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">나스닥 급등 시 채권 40%로 일시 상향 후 단계적 환원</td>
+                    </tr>
+                    <tr>
+                        <td><strong>IRP 개인연금</strong></td>
+                        <td style="font-size:12px;color:var(--text-secondary)">연 300만 납입 시</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">하락한 자산 위주 집중 매수 (자동 리밸런싱)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>연금저축펀드1</strong></td>
+                        <td style="font-size:12px;color:var(--text-secondary)">연 600만 납입 시</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">S&P500:차이나 비중 모니터링, 중국 리스크 시 PLUS신흥국으로
+                            전환
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>연금저축펀드2</strong></td>
+                        <td style="font-size:12px;color:var(--text-secondary)">연 1회</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">비중 점검. 부동산 취득 후 포트폴리오 성격 재검토.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ISA</strong></td>
+                        <td style="font-size:12px;color:var(--text-secondary)">만기 1~2개월 전</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">환율 점검 후 달러 자산 비중 조절. 해지 후 5,381만 부동산
+                            편입.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-
-    <hr class="divider">
-
-    <!-- 계좌별 운용 가이드 -->
-    <div>
-      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">계좌별 운용 가이드</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>계좌</th><th>리밸런싱 시점</th><th>방법</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>IRP 퇴직연금</strong></td>
-              <td style="font-size:12px;color:var(--text-secondary)">연 1회 점검 / 이직 입금 시</td>
-              <td style="font-size:12px;color:var(--text-secondary)">나스닥 급등 시 채권 40%로 일시 상향 후 단계적 환원</td>
-            </tr>
-            <tr>
-              <td><strong>IRP 개인연금</strong></td>
-              <td style="font-size:12px;color:var(--text-secondary)">연 300만 납입 시</td>
-              <td style="font-size:12px;color:var(--text-secondary)">하락한 자산 위주 집중 매수 (자동 리밸런싱)</td>
-            </tr>
-            <tr>
-              <td><strong>연금저축펀드1</strong></td>
-              <td style="font-size:12px;color:var(--text-secondary)">연 600만 납입 시</td>
-              <td style="font-size:12px;color:var(--text-secondary)">S&P500:차이나 비중 모니터링, 중국 리스크 시 PLUS신흥국으로 전환</td>
-            </tr>
-            <tr>
-              <td><strong>연금저축펀드2</strong></td>
-              <td style="font-size:12px;color:var(--text-secondary)">연 1회</td>
-              <td style="font-size:12px;color:var(--text-secondary)">비중 점검. 부동산 취득 후 포트폴리오 성격 재검토.</td>
-            </tr>
-            <tr>
-              <td><strong>ISA</strong></td>
-              <td style="font-size:12px;color:var(--text-secondary)">만기 1~2개월 전</td>
-              <td style="font-size:12px;color:var(--text-secondary)">환율 점검 후 달러 자산 비중 조절. 해지 후 5,381만 부동산 편입.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
 
 </main>
 
 <script src="portfolio-data.js"></script>
 <script>
-// STATE: current amounts indexed by accountId -> etfName
-const state = {};
-const costState = {};
-ACCOUNTS.forEach(acc => {
-  state[acc.id] = {};
-  costState[acc.id] = {};
-  acc.holdings.forEach(h => {
-    state[acc.id][h.etf] = h.defaultAmt;
-    costState[acc.id][h.etf] = h.defaultCost || 0;
-  });
-});
+    // STATE: current amounts indexed by accountId -> etfName
+    const state = {};
+    const costState = {};
+    ACCOUNTS.forEach(acc => {
+        state[acc.id] = {};
+        costState[acc.id] = {};
+        acc.holdings.forEach(h => {
+            state[acc.id][h.etf] = h.defaultAmt;
+            costState[acc.id][h.etf] = h.defaultCost || 0;
+        });
+    });
 
-// =============================================
-// UTILITIES
-// =============================================
-function getEtfType(etfName) {
-  const entry = ETF_LIST.find(e => e.name === etfName);
-  return entry ? entry.type : 'safe'; // 현금 등 미등록 항목은 안전으로 취급
-}
-function fmt(n) {
-  return n.toLocaleString('ko-KR') + '만원';
-}
-function fmtPct(n) {
-  return n.toFixed(1) + '%';
-}
-function fmtDiff(n) {
-  const s = n >= 0 ? '+' : '';
-  return s + n.toFixed(1) + '%p';
-}
-function fmtAmt(n) {
-  const sign = n >= 0 ? '+' : '';
-  return sign + Math.round(n).toLocaleString('ko-KR') + '만원';
-}
+    // =============================================
+    // UTILITIES
+    // =============================================
+    function getEtfType(etfName) {
+        const entry = ETF_LIST.find(e => e.name === etfName);
+        return entry ? entry.type : 'safe'; // 현금 등 미등록 항목은 안전으로 취급
+    }
 
-function getAccountTotal(accId) {
-  const acc = ACCOUNTS.find(a => a.id === accId);
-  return acc.holdings.reduce((sum, h) => sum + (state[accId][h.etf] || 0), 0);
-}
+    function fmt(n) {
+        return n.toLocaleString('ko-KR') + '만원';
+    }
 
-function getGlobalTotal() {
-  return ACCOUNTS.reduce((sum, acc) => sum + getAccountTotal(acc.id), 0);
-}
+    function fmtPct(n) {
+        return n.toFixed(1) + '%';
+    }
 
-function diffClass(diff) {
-  const abs = Math.abs(diff);
-  if (abs <= 2) return 'cell-green';
-  if (abs <= 5) return 'cell-amber';
-  return 'cell-red';
-}
+    function fmtDiff(n) {
+        const s = n >= 0 ? '+' : '';
+        return s + n.toFixed(1) + '%p';
+    }
 
-function rowHighlight(diff) {
-  const abs = Math.abs(diff);
-  if (abs > 5) return 'highlight-danger';
-  if (abs > 2) return 'highlight-warn';
-  return '';
-}
+    function fmtAmt(n) {
+        const sign = n >= 0 ? '+' : '';
+        return sign + Math.round(n).toLocaleString('ko-KR') + '만원';
+    }
 
-function actionChip(diff, total) {
-  const amt = -diff / 100 * total;
-  if (Math.abs(diff) <= 1) return `<span class="action-chip action-ok">✓ 유지</span>`;
-  if (Math.abs(diff) > 5) {
-    if (amt > 0) return `<span class="action-chip action-buy">▲ 매수 ${fmtAmt(amt)}</span>`;
-    return `<span class="action-chip action-sell">▼ 매도 ${fmtAmt(-amt)}</span>`;
-  }
-  if (amt > 0) return `<span class="action-chip action-warn">△ 매수 ${fmtAmt(amt)}</span>`;
-  return `<span class="action-chip action-warn">▽ 매도 ${fmtAmt(-amt)}</span>`;
-}
+    function getAccountTotal(accId) {
+        const acc = ACCOUNTS.find(a => a.id === accId);
+        return acc.holdings.reduce((sum, h) => sum + (state[accId][h.etf] || 0), 0);
+    }
 
-// =============================================
-// CURRENCY MAPPING (ETF_LIST.currency 에서 자동 생성)
-// =============================================
-const CURRENCY_MAP = Object.fromEntries(ETF_LIST.map(e => [e.name, e.currency]));
+    function getGlobalTotal() {
+        return ACCOUNTS.reduce((sum, acc) => sum + getAccountTotal(acc.id), 0);
+    }
 
-const CURRENCY_ROWS = [
-  { key: 'USD',      label: 'USD',                    desc: '나스닥100, S&P500, 미국배당, KODEX선진국 내 미국분(×70%)',         color: 'var(--text-primary)' },
-  { key: 'KRW',      label: 'KRW',                    desc: '종합채권, CD금리, 자원생산기업(합성H), PLUS 신흥국MSCI(합성H · 환헤지)', color: 'var(--text-primary)' },
-  { key: 'GOLD',     label: '금 (KRW가격 · USD연동)', desc: 'KRX금현물',                                                          color: 'var(--gold)' },
-  { key: 'CNY',      label: '중국통화 (CNY/HKD)',     desc: '차이나항셍테크 직접 — PLUS신흥국 합성H 내포분은 환헤지됨',          color: 'var(--text-primary)' },
-  { key: 'OTHER_DM', label: '기타 선진국 (EUR · JPY 등)', desc: 'KODEX 선진국 내 비미국분(×30%)',                               color: 'var(--text-primary)' },
-  { key: 'INR',      label: 'INR (인도 루피)',            desc: '인도니프티50',                                                    color: 'var(--text-primary)' },
-];
+    function diffClass(diff) {
+        const abs = Math.abs(diff);
+        if (abs <= 2) return 'cell-green';
+        if (abs <= 5) return 'cell-amber';
+        return 'cell-red';
+    }
 
-// =============================================
-// RENDER ACCOUNT TABLE
-// =============================================
-function renderAccount(accId) {
-  const acc = ACCOUNTS.find(a => a.id === accId);
-  const total = getAccountTotal(accId);
-  const tbody = document.getElementById(accId + '-tbody');
-  const totalEl = document.getElementById(accId + '-total');
-  if (totalEl) totalEl.textContent = fmt(total);
+    function rowHighlight(diff) {
+        const abs = Math.abs(diff);
+        if (abs > 5) return 'highlight-danger';
+        if (abs > 2) return 'highlight-warn';
+        return '';
+    }
 
-  let html = '';
-  let safeTotal = 0;
+    function actionChip(diff, total) {
+        const amt = -diff / 100 * total;
+        if (Math.abs(diff) <= 1) return `<span class="action-chip action-ok">✓ 유지</span>`;
+        if (Math.abs(diff) > 5) {
+            if (amt > 0) return `<span class="action-chip action-buy">▲ 매수 ${fmtAmt(amt)}</span>`;
+            return `<span class="action-chip action-sell">▼ 매도 ${fmtAmt(-amt)}</span>`;
+        }
+        if (amt > 0) return `<span class="action-chip action-warn">△ 매수 ${fmtAmt(amt)}</span>`;
+        return `<span class="action-chip action-warn">▽ 매도 ${fmtAmt(-amt)}</span>`;
+    }
 
-  acc.holdings.forEach(h => {
-    const current = state[accId][h.etf] || 0;
-    const cost = costState[accId][h.etf] || 0;
-    const currentPct = total > 0 ? (current / total * 100) : 0;
-    const diff = currentPct - h.targetPct;
-    const rowCls = rowHighlight(diff);
-    const etfType = getEtfType(h.etf);
-    if (etfType === 'safe') safeTotal += currentPct;
+    // =============================================
+    // CURRENCY MAPPING (ETF_LIST.currency 에서 자동 생성)
+    // =============================================
+    const CURRENCY_MAP = Object.fromEntries(ETF_LIST.map(e => [e.name, e.currency]));
 
-    const returnRate = cost > 0 ? (current - cost) / cost * 100 : null;
-    const returnHtml = returnRate === null
-      ? `<span class="return-zero">—</span>`
-      : `<span class="return-chip ${returnRate > 0 ? 'return-pos' : returnRate < 0 ? 'return-neg' : 'return-zero'}">${returnRate >= 0 ? '+' : ''}${returnRate.toFixed(1)}%</span>`;
+    const CURRENCY_ROWS = [
+        {key: 'USD', label: 'USD', desc: '나스닥100, S&P500, 미국배당, KODEX선진국 내 미국분(×70%)', color: 'var(--text-primary)'},
+        {
+            key: 'KRW',
+            label: 'KRW',
+            desc: '종합채권, CD금리, 자원생산기업(합성H), PLUS 신흥국MSCI(합성H · 환헤지)',
+            color: 'var(--text-primary)'
+        },
+        {key: 'GOLD', label: '금 (KRW가격 · USD연동)', desc: 'KRX금현물', color: 'var(--gold)'},
+        {key: 'CNY', label: '중국통화 (CNY/HKD)', desc: '차이나항셍테크 직접 — PLUS신흥국 합성H 내포분은 환헤지됨', color: 'var(--text-primary)'},
+        {key: 'OTHER_DM', label: '기타 선진국 (EUR · JPY 등)', desc: 'KODEX 선진국 내 비미국분(×30%)', color: 'var(--text-primary)'},
+        {key: 'INR', label: 'INR (인도 루피)', desc: '인도니프티50', color: 'var(--text-primary)'},
+    ];
 
-    const typeLabels = { stock: '주식', alt: '대안', safe: '안전' };
-    const typeCss    = { stock: 'risk-stock', alt: 'risk-alt', safe: 'risk-safe' };
-    const typeCol = `<td><span class="risk-label ${typeCss[etfType] || ''}">${typeLabels[etfType] || ''}</span></td>`;
+    // =============================================
+    // RENDER ACCOUNT TABLE
+    // =============================================
+    function renderAccount(accId) {
+        const acc = ACCOUNTS.find(a => a.id === accId);
+        const total = getAccountTotal(accId);
+        const tbody = document.getElementById(accId + '-tbody');
+        const totalEl = document.getElementById(accId + '-total');
+        if (totalEl) totalEl.textContent = fmt(total);
 
-    html += `<tr class="${rowCls}">
+        let html = '';
+        let safeTotal = 0;
+
+        acc.holdings.forEach(h => {
+            const current = state[accId][h.etf] || 0;
+            const cost = costState[accId][h.etf] || 0;
+            const currentPct = total > 0 ? (current / total * 100) : 0;
+            const diff = currentPct - h.targetPct;
+            const rowCls = rowHighlight(diff);
+            const etfType = getEtfType(h.etf);
+            if (etfType === 'safe') safeTotal += currentPct;
+
+            const returnRate = cost > 0 ? (current - cost) / cost * 100 : null;
+            const returnHtml = returnRate === null
+                ? `<span class="return-zero">—</span>`
+                : `<span class="return-chip ${returnRate > 0 ? 'return-pos' : returnRate < 0 ? 'return-neg' : 'return-zero'}">${returnRate >= 0 ? '+' : ''}${returnRate.toFixed(1)}%</span>`;
+
+            const typeLabels = {stock: '주식', alt: '대안', safe: '안전'};
+            const typeCss = {stock: 'risk-stock', alt: 'risk-alt', safe: 'risk-safe'};
+            const typeCol = `<td><span class="risk-label ${typeCss[etfType] || ''}">${typeLabels[etfType] || ''}</span></td>`;
+
+            html += `<tr class="${rowCls}">
       <td>
         <div class="etf-name">${h.etf}</div>
       </td>
@@ -1457,193 +1742,200 @@ function renderAccount(accId) {
       <td class="pct-cell ${diffClass(diff)}">${fmtDiff(diff)}</td>
       <td>${actionChip(diff, total)}</td>
     </tr>`;
-  });
+        });
 
-  if (tbody) tbody.innerHTML = html;
+        if (tbody) tbody.innerHTML = html;
 
-  // Ratio row
-  const ratioEl = document.getElementById(accId + '-ratio-row');
-  if (ratioEl) {
-    const riskPct = 100 - safeTotal;
-    ratioEl.innerHTML = `
+        // Ratio row
+        const ratioEl = document.getElementById(accId + '-ratio-row');
+        if (ratioEl) {
+            const riskPct = 100 - safeTotal;
+            ratioEl.innerHTML = `
       <span class="ratio-label" style="color:var(--risk-color)">위험자산</span>
       <span class="ratio-value" style="color:var(--risk-color)">${fmtPct(riskPct)}</span>
       <div class="ratio-bar"><div class="ratio-fill" style="width:${riskPct}%"></div></div>
       <span class="ratio-value" style="color:var(--safe-color)">${fmtPct(safeTotal)}</span>
       <span class="ratio-label" style="color:var(--safe-color)">안전자산</span>
     `;
-  }
-
-  // IRP compliance
-  if (acc.irpSafetyRequired) {
-    const compEl = document.getElementById(accId + '-compliance');
-    if (compEl) {
-      let safeActual = 0;
-      acc.holdings.forEach(h => {
-        if (getEtfType(h.etf) === 'safe') {
-          const cur = state[accId][h.etf] || 0;
-          safeActual += total > 0 ? (cur / total * 100) : 0;
         }
-      });
-      const ok = safeActual >= 29.5;
-      compEl.className = 'irp-compliance ' + (ok ? 'ok' : 'fail');
-      compEl.innerHTML = ok
-        ? `<span class="check-icon">✓</span> 안전자산 ${fmtPct(safeActual)} — IRP 30% 의무 충족`
-        : `<span class="check-icon">✗</span> 안전자산 ${fmtPct(safeActual)} — IRP 30% 의무 미충족! (${fmtPct(30 - safeActual)} 부족)`;
+
+        // IRP compliance
+        if (acc.irpSafetyRequired) {
+            const compEl = document.getElementById(accId + '-compliance');
+            if (compEl) {
+                let safeActual = 0;
+                acc.holdings.forEach(h => {
+                    if (getEtfType(h.etf) === 'safe') {
+                        const cur = state[accId][h.etf] || 0;
+                        safeActual += total > 0 ? (cur / total * 100) : 0;
+                    }
+                });
+                const ok = safeActual >= 29.5;
+                compEl.className = 'irp-compliance ' + (ok ? 'ok' : 'fail');
+                compEl.innerHTML = ok
+                    ? `<span class="check-icon">✓</span> 안전자산 ${fmtPct(safeActual)} — IRP 30% 의무 충족`
+                    : `<span class="check-icon">✗</span> 안전자산 ${fmtPct(safeActual)} — IRP 30% 의무 미충족! (${fmtPct(30 - safeActual)} 부족)`;
+            }
+        }
     }
-  }
-}
 
-// =============================================
-// DYNAMIC GLOBAL TARGETS
-// =============================================
-function computeDynamicGlobalTargets() {
-  let globalTotal = 0;
-  const accTotals = {};
-  ACCOUNTS.forEach(acc => {
-    const t = acc.holdings.reduce((s, h) => s + (state[acc.id][h.etf] || 0), 0);
-    accTotals[acc.id] = t;
-    globalTotal += t;
-  });
-  if (globalTotal === 0) return {};
-  const targets = {};
-  ACCOUNTS.forEach(acc => {
-    acc.holdings.forEach(h => {
-      if (!targets[h.etf]) targets[h.etf] = 0;
-      targets[h.etf] += (accTotals[acc.id] / globalTotal) * h.targetPct;
-    });
-  });
-  return targets;
-}
-
-// =============================================
-// RENDER SUMMARY
-// =============================================
-function renderSummary() {
-  const globalTotal = getGlobalTotal();
-  document.getElementById('header-total').textContent = fmt(globalTotal);
-
-  // 네비게이션 탭 금액 업데이트
-  ACCOUNTS.forEach(acc => {
-    const el = document.getElementById('tab-amount-' + acc.id);
-    if (el) {
-      const total = getAccountTotal(acc.id);
-      el.textContent = total > 0 ? Math.round(total).toLocaleString('ko-KR') + '만' : '';
+    // =============================================
+    // DYNAMIC GLOBAL TARGETS
+    // =============================================
+    function computeDynamicGlobalTargets() {
+        let globalTotal = 0;
+        const accTotals = {};
+        ACCOUNTS.forEach(acc => {
+            const t = acc.holdings.reduce((s, h) => s + (state[acc.id][h.etf] || 0), 0);
+            accTotals[acc.id] = t;
+            globalTotal += t;
+        });
+        if (globalTotal === 0) return {};
+        const targets = {};
+        ACCOUNTS.forEach(acc => {
+            acc.holdings.forEach(h => {
+                if (!targets[h.etf]) targets[h.etf] = 0;
+                targets[h.etf] += (accTotals[acc.id] / globalTotal) * h.targetPct;
+            });
+        });
+        return targets;
     }
-  });
 
-  // Aggregate ETF amounts and costs across all accounts
-  const etfAmounts = {};
-  const etfCosts = {};
-  const allEtfsSet = new Set(ACCOUNTS.flatMap(acc => acc.holdings.map(h => h.etf)));
-  const allEtfs = [
-    ...ETF_LIST.map(e => e.name).filter(n => allEtfsSet.has(n)),
-    ...[...allEtfsSet].filter(n => !ETF_LIST.some(e => e.name === n))
-  ];
-  allEtfs.forEach(etf => { etfAmounts[etf] = 0; etfCosts[etf] = 0; });
+    // =============================================
+    // RENDER SUMMARY
+    // =============================================
+    function renderSummary() {
+        const globalTotal = getGlobalTotal();
+        document.getElementById('header-total').textContent = fmt(globalTotal);
 
-  ACCOUNTS.forEach(acc => {
-    acc.holdings.forEach(h => {
-      etfAmounts[h.etf] += (state[acc.id][h.etf] || 0);
-      etfCosts[h.etf] += (costState[acc.id][h.etf] || 0);
-    });
-  });
+        // 네비게이션 탭 금액 업데이트
+        ACCOUNTS.forEach(acc => {
+            const el = document.getElementById('tab-amount-' + acc.id);
+            if (el) {
+                const total = getAccountTotal(acc.id);
+                el.textContent = total > 0 ? Math.round(total).toLocaleString('ko-KR') + '만' : '';
+            }
+        });
 
-  const dynamicTargets = computeDynamicGlobalTargets();
+        // Aggregate ETF amounts and costs across all accounts
+        const etfAmounts = {};
+        const etfCosts = {};
+        const allEtfsSet = new Set(ACCOUNTS.flatMap(acc => acc.holdings.map(h => h.etf)));
+        const allEtfs = [
+            ...ETF_LIST.map(e => e.name).filter(n => allEtfsSet.has(n)),
+            ...[...allEtfsSet].filter(n => !ETF_LIST.some(e => e.name === n))
+        ];
+        allEtfs.forEach(etf => {
+            etfAmounts[etf] = 0;
+            etfCosts[etf] = 0;
+        });
 
-  // ETF_LIST type === 'safe' 로 전체 계좌 집계
-  let safeTotalAmt = 0;
-  ACCOUNTS.forEach(acc => {
-    acc.holdings.forEach(h => {
-      if (getEtfType(h.etf) === 'safe') safeTotalAmt += (state[acc.id][h.etf] || 0);
-    });
-  });
+        ACCOUNTS.forEach(acc => {
+            acc.holdings.forEach(h => {
+                etfAmounts[h.etf] += (state[acc.id][h.etf] || 0);
+                etfCosts[h.etf] += (costState[acc.id][h.etf] || 0);
+            });
+        });
 
-  const tbody = document.getElementById('summary-tbody');
-  let html = '';
-  let totalAmt = 0;
-  let totalCost = 0;
+        const dynamicTargets = computeDynamicGlobalTargets();
 
-  allEtfs.forEach(etf => {
-    const targetPct = dynamicTargets[etf] || 0;
-    const amt = etfAmounts[etf] || 0;
-    const cost = etfCosts[etf] || 0;
-    totalAmt += amt;
-    if (cost > 0) totalCost += cost;
+        // ETF_LIST type === 'safe' 로 전체 계좌 집계
+        let safeTotalAmt = 0;
+        ACCOUNTS.forEach(acc => {
+            acc.holdings.forEach(h => {
+                if (getEtfType(h.etf) === 'safe') safeTotalAmt += (state[acc.id][h.etf] || 0);
+            });
+        });
 
-    const actualPct = globalTotal > 0 ? (amt / globalTotal * 100) : 0;
-    const diff = actualPct - targetPct;
-    const cls = diffClass(diff);
+        const tbody = document.getElementById('summary-tbody');
+        let html = '';
+        let totalAmt = 0;
+        let totalCost = 0;
 
-    const barPct = Math.min(100, (actualPct / Math.max(targetPct, 1)) * 100);
-    const barColor = Math.abs(diff) <= 2 ? 'bar-green' : Math.abs(diff) <= 5 ? 'bar-amber' : 'bar-red';
+        allEtfs.forEach(etf => {
+            const targetPct = dynamicTargets[etf] || 0;
+            const amt = etfAmounts[etf] || 0;
+            const cost = etfCosts[etf] || 0;
+            totalAmt += amt;
+            if (cost > 0) totalCost += cost;
 
-    const statusIcon = Math.abs(diff) <= 2 ? '✓' : Math.abs(diff) <= 5 ? '△' : '⚠';
-    const statusColor = Math.abs(diff) <= 2 ? 'var(--green)' : Math.abs(diff) <= 5 ? 'var(--amber)' : 'var(--red)';
+            const actualPct = globalTotal > 0 ? (amt / globalTotal * 100) : 0;
+            const diff = actualPct - targetPct;
+            const cls = diffClass(diff);
 
-    const returnRate = cost > 0 ? (amt - cost) / cost * 100 : null;
-    const returnHtml = returnRate === null
-      ? `<span class="return-zero">—</span>`
-      : `<span class="return-chip ${returnRate > 0 ? 'return-pos' : returnRate < 0 ? 'return-neg' : 'return-zero'}">${returnRate >= 0 ? '+' : ''}${returnRate.toFixed(1)}%</span>`;
+            const barPct = Math.min(100, (actualPct / Math.max(targetPct, 1)) * 100);
+            const barColor = Math.abs(diff) <= 2 ? 'bar-green' : Math.abs(diff) <= 5 ? 'bar-amber' : 'bar-red';
 
-    html += `<tr>
+            const statusIcon = Math.abs(diff) <= 2 ? '✓' : Math.abs(diff) <= 5 ? '△' : '⚠';
+            const statusColor = Math.abs(diff) <= 2 ? 'var(--green)' : Math.abs(diff) <= 5 ? 'var(--amber)' : 'var(--red)';
+
+            const returnRate = cost > 0 ? (amt - cost) / cost * 100 : null;
+            const returnHtml = returnRate === null
+                ? `<span class="return-zero">—</span>`
+                : `<span class="return-chip ${returnRate > 0 ? 'return-pos' : returnRate < 0 ? 'return-neg' : 'return-zero'}">${returnRate >= 0 ? '+' : ''}${returnRate.toFixed(1)}%</span>`;
+
+            html += `<tr>
       <td>
         <div class="etf-name">${etf}</div>
       </td>
       <td class="pct-cell">${fmtPct(targetPct)}</td>
       <td class="pct-cell">
         ${fmtPct(actualPct)}
-        <div class="bar-wrap"><div class="bar-fill ${barColor}" style="width:${Math.min(100,barPct)}%"></div></div>
+        <div class="bar-wrap"><div class="bar-fill ${barColor}" style="width:${Math.min(100, barPct)}%"></div></div>
       </td>
       <td class="pct-cell ${cls}">${fmtDiff(diff)}</td>
       <td class="pct-cell" style="font-family:var(--mono)">${fmt(amt)}</td>
       <td class="pct-cell">${returnHtml}</td>
       <td><span style="color:${statusColor};font-size:15px;">${statusIcon}</span></td>
     </tr>`;
-  });
+        });
 
-  if (tbody) tbody.innerHTML = html;
+        if (tbody) tbody.innerHTML = html;
 
-  const totalPctEl = document.getElementById('summary-total-pct');
-  const totalAmtEl = document.getElementById('summary-total-amt');
-  const totalReturnEl = document.getElementById('summary-total-return');
-  if (totalPctEl) totalPctEl.textContent = '100.0%';
-  if (totalAmtEl) totalAmtEl.textContent = fmt(globalTotal);
-  if (totalReturnEl) {
-    const totalReturn = totalCost > 0 ? (globalTotal - totalCost) / totalCost * 100 : null;
-    totalReturnEl.innerHTML = totalReturn === null
-      ? '—'
-      : `<span class="return-chip ${totalReturn > 0 ? 'return-pos' : totalReturn < 0 ? 'return-neg' : 'return-zero'}">${totalReturn >= 0 ? '+' : ''}${totalReturn.toFixed(1)}%</span>`;
-  }
+        const totalPctEl = document.getElementById('summary-total-pct');
+        const totalAmtEl = document.getElementById('summary-total-amt');
+        const totalReturnEl = document.getElementById('summary-total-return');
+        if (totalPctEl) totalPctEl.textContent = '100.0%';
+        if (totalAmtEl) totalAmtEl.textContent = fmt(globalTotal);
+        if (totalReturnEl) {
+            const totalReturn = totalCost > 0 ? (globalTotal - totalCost) / totalCost * 100 : null;
+            totalReturnEl.innerHTML = totalReturn === null
+                ? '—'
+                : `<span class="return-chip ${totalReturn > 0 ? 'return-pos' : totalReturn < 0 ? 'return-neg' : 'return-zero'}">${totalReturn >= 0 ? '+' : ''}${totalReturn.toFixed(1)}%</span>`;
+        }
 
-  // Asset type breakdown
-  const safeTotal = safeTotalAmt;
-  // Also add ISA safe assets (국고채 + CD금리)
-  const riskTotal = globalTotal - safeTotal;
-  const safePct = globalTotal > 0 ? (safeTotal / globalTotal * 100) : 0;
-  const riskPct = 100 - safePct;
+        // Asset type breakdown
+        const safeTotal = safeTotalAmt;
+        // Also add ISA safe assets (국고채 + CD금리)
+        const riskTotal = globalTotal - safeTotal;
+        const safePct = globalTotal > 0 ? (safeTotal / globalTotal * 100) : 0;
+        const riskPct = 100 - safePct;
 
-  // Note: gold/resources are considered "risk" for this ratio
-  const stockEtfs = ETF_LIST.filter(e => e.type === 'stock').map(e => e.name);
-  const altEtfs   = ETF_LIST.filter(e => e.type === 'alt').map(e => e.name);
-  const safeEtfs  = ETF_LIST.filter(e => e.type === 'safe').map(e => e.name);
-  const targetStockPct = stockEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
-  const targetAltPct   = altEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
-  const targetSafePct  = safeEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
+        // Note: gold/resources are considered "risk" for this ratio
+        const stockEtfs = ETF_LIST.filter(e => e.type === 'stock').map(e => e.name);
+        const altEtfs = ETF_LIST.filter(e => e.type === 'alt').map(e => e.name);
+        const safeEtfs = ETF_LIST.filter(e => e.type === 'safe').map(e => e.name);
+        const targetStockPct = stockEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
+        const targetAltPct = altEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
+        const targetSafePct = safeEtfs.reduce((s, etf) => s + (dynamicTargets[etf] || 0), 0);
 
-  const assetTbody = document.getElementById('summary-asset-tbody');
-  if (assetTbody) {
-    // More detailed breakdown
-    let riskStockAmt = 0;
-    let altAmt = 0;
+        const assetTbody = document.getElementById('summary-asset-tbody');
+        if (assetTbody) {
+            // More detailed breakdown
+            let riskStockAmt = 0;
+            let altAmt = 0;
 
-    stockEtfs.forEach(etf => { riskStockAmt += (etfAmounts[etf] || 0); });
-    altEtfs.forEach(etf => { altAmt += (etfAmounts[etf] || 0); });
+            stockEtfs.forEach(etf => {
+                riskStockAmt += (etfAmounts[etf] || 0);
+            });
+            altEtfs.forEach(etf => {
+                altAmt += (etfAmounts[etf] || 0);
+            });
 
-    const stockPct = globalTotal > 0 ? (riskStockAmt / globalTotal * 100) : 0;
-    const altPct = globalTotal > 0 ? (altAmt / globalTotal * 100) : 0;
+            const stockPct = globalTotal > 0 ? (riskStockAmt / globalTotal * 100) : 0;
+            const altPct = globalTotal > 0 ? (altAmt / globalTotal * 100) : 0;
 
-    assetTbody.innerHTML = `
+            assetTbody.innerHTML = `
       <tr>
         <td><span class="risk-dot"></span>주식</td>
         <td class="pct-cell">${fmtPct(targetStockPct)}</td>
@@ -1669,15 +1961,15 @@ function renderSummary() {
         <td class="pct-cell" style="font-family:var(--mono);font-size:12px;">${fmt(globalTotal)}</td>
       </tr>
     `;
-  }
+        }
 
-  // Risk ratio gauge
-  const gaugeEl = document.getElementById('risk-ratio-display');
-  if (gaugeEl) {
-    const targetRiskPct = targetStockPct + targetAltPct;
-    const halfRange = 5;
-    const riskColor = Math.abs(riskPct - targetRiskPct) <= halfRange ? 'var(--green)' : Math.abs(riskPct - targetRiskPct) <= halfRange * 2 ? 'var(--amber)' : 'var(--red)';
-    gaugeEl.innerHTML = `
+        // Risk ratio gauge
+        const gaugeEl = document.getElementById('risk-ratio-display');
+        if (gaugeEl) {
+            const targetRiskPct = targetStockPct + targetAltPct;
+            const halfRange = 5;
+            const riskColor = Math.abs(riskPct - targetRiskPct) <= halfRange ? 'var(--green)' : Math.abs(riskPct - targetRiskPct) <= halfRange * 2 ? 'var(--amber)' : 'var(--red)';
+            gaugeEl.innerHTML = `
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
         <div style="flex:1;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;">
@@ -1700,140 +1992,144 @@ function renderSummary() {
         현재: 위험 <strong style="color:${riskColor}">${fmtPct(riskPct)}</strong> / 안전 <strong style="color:var(--safe-color)">${fmtPct(safePct)}</strong>
       </div>
     `;
-  }
-
-  // Currency exposure (실시간 계산)
-  const currencyEl = document.getElementById('currency-tbody');
-  if (currencyEl) {
-    // 목표 비중: 동적 계산 기준
-    const targetCur = { USD: 0, KRW: 0, GOLD: 0, CNY: 0, OTHER_DM: 0 };
-    Object.entries(dynamicTargets).forEach(([etf, pct]) => {
-      const map = CURRENCY_MAP[etf];
-      if (map) Object.entries(map).forEach(([c, r]) => { targetCur[c] += pct * r; });
-    });
-
-    // 현재 비중: 모든 계좌 state 합산
-    const curAmts = { USD: 0, KRW: 0, GOLD: 0, CNY: 0, OTHER_DM: 0 };
-    const allTotal = getGlobalTotal();
-    ACCOUNTS.forEach(acc => {
-      acc.holdings.forEach(h => {
-        const map = CURRENCY_MAP[h.etf];
-        if (map) {
-          const amt = state[acc.id][h.etf] || 0;
-          Object.entries(map).forEach(([c, r]) => { curAmts[c] += amt * r; });
         }
-      });
-    });
 
-    currencyEl.innerHTML = CURRENCY_ROWS.map(row => {
-      const targetPct = targetCur[row.key] || 0;
-      const actualPct = allTotal > 0 ? (curAmts[row.key] / allTotal * 100) : 0;
-      const diff = actualPct - targetPct;
-      const diffStr = Math.abs(diff) < 0.05 ? '' :
-        ` <span style="font-size:11px;color:${diff > 0 ? 'var(--amber)' : 'var(--safe-color)'}">(${diff > 0 ? '+' : ''}${diff.toFixed(1)}%p)</span>`;
-      return `<tr>
+        // Currency exposure (실시간 계산)
+        const currencyEl = document.getElementById('currency-tbody');
+        if (currencyEl) {
+            // 목표 비중: 동적 계산 기준
+            const targetCur = {USD: 0, KRW: 0, GOLD: 0, CNY: 0, OTHER_DM: 0, INR: 0,};
+            Object.entries(dynamicTargets).forEach(([etf, pct]) => {
+                const map = CURRENCY_MAP[etf];
+                if (map) Object.entries(map).forEach(([c, r]) => {
+                    targetCur[c] += pct * r;
+                });
+            });
+
+            // 현재 비중: 모든 계좌 state 합산
+            const curAmts = {USD: 0, KRW: 0, GOLD: 0, CNY: 0, OTHER_DM: 0};
+            const allTotal = getGlobalTotal();
+            ACCOUNTS.forEach(acc => {
+                acc.holdings.forEach(h => {
+                    const map = CURRENCY_MAP[h.etf];
+                    if (map) {
+                        const amt = state[acc.id][h.etf] || 0;
+                        Object.entries(map).forEach(([c, r]) => {
+                            curAmts[c] += amt * r;
+                        });
+                    }
+                });
+            });
+
+            currencyEl.innerHTML = CURRENCY_ROWS.map(row => {
+                const targetPct = targetCur[row.key] || 0;
+                const actualPct = allTotal > 0 ? (curAmts[row.key] / allTotal * 100) : 0;
+                const diff = actualPct - targetPct;
+                const diffStr = Math.abs(diff) < 0.05 ? '' :
+                    ` <span style="font-size:11px;color:${diff > 0 ? 'var(--amber)' : 'var(--safe-color)'}">(${diff > 0 ? '+' : ''}${diff.toFixed(1)}%p)</span>`;
+                return `<tr>
         <td><strong>${row.label}</strong></td>
         <td class="pct-cell right" style="color:${row.color}">${targetPct.toFixed(1)}%</td>
         <td class="pct-cell right" style="color:${row.color}">${actualPct.toFixed(1)}%${diffStr}</td>
         <td style="font-size:12px;color:var(--text-secondary)">${row.desc}</td>
       </tr>`;
-    }).join('');
-  }
-}
+            }).join('');
+        }
+    }
 
-// =============================================
-// EVENT HANDLING
-// =============================================
-function updateState(input) {
-  const accId = input.dataset.acc;
-  const etf = input.dataset.etf;
-  const type = input.dataset.type;
-  const val = parseFloat(input.value) || 0;
-  if (type === 'cost') {
-    costState[accId][etf] = val;
-  } else {
-    state[accId][etf] = val;
-  }
-  renderAccount(accId);
-  renderSummary();
-  updateLastUpdated();
-}
+    // =============================================
+    // EVENT HANDLING
+    // =============================================
+    function updateState(input) {
+        const accId = input.dataset.acc;
+        const etf = input.dataset.etf;
+        const type = input.dataset.type;
+        const val = parseFloat(input.value) || 0;
+        if (type === 'cost') {
+            costState[accId][etf] = val;
+        } else {
+            state[accId][etf] = val;
+        }
+        renderAccount(accId);
+        renderSummary();
+        updateLastUpdated();
+    }
 
-function resetAccount(accId) {
-  const acc = ACCOUNTS.find(a => a.id === accId);
-  acc.holdings.forEach(h => {
-    state[accId][h.etf] = h.defaultAmt;
-    costState[accId][h.etf] = h.defaultCost || 0;
-  });
-  renderAccount(accId);
-  renderSummary();
-  updateLastUpdated();
-}
+    function resetAccount(accId) {
+        const acc = ACCOUNTS.find(a => a.id === accId);
+        acc.holdings.forEach(h => {
+            state[accId][h.etf] = h.defaultAmt;
+            costState[accId][h.etf] = h.defaultCost || 0;
+        });
+        renderAccount(accId);
+        renderSummary();
+        updateLastUpdated();
+    }
 
-function switchPanel(panelId) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + panelId).classList.add('active');
-  document.querySelector(`[data-panel="${panelId}"]`).classList.add('active');
-}
+    function switchPanel(panelId) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('panel-' + panelId).classList.add('active');
+        document.querySelector(`[data-panel="${panelId}"]`).classList.add('active');
+    }
 
-function updateLastUpdated() {
-  const now = new Date();
-  const str = now.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-    + ' ' + now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-  document.getElementById('last-updated').textContent = '업데이트: ' + str;
-}
+    function updateLastUpdated() {
+        const now = new Date();
+        const str = now.toLocaleDateString('ko-KR', {year: 'numeric', month: '2-digit', day: '2-digit'})
+            + ' ' + now.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'});
+        document.getElementById('last-updated').textContent = '업데이트: ' + str;
+    }
 
-// =============================================
-// RENDER DCA
-// =============================================
-function renderDca() {
-  const { totalRounds, completedRounds } = DCA_CONFIG;
-  const remainingRounds = totalRounds - completedRounds;
-  const progressPct = totalRounds > 0 ? (completedRounds / totalRounds * 100) : 0;
+    // =============================================
+    // RENDER DCA
+    // =============================================
+    function renderDca() {
+        const {totalRounds, completedRounds} = DCA_CONFIG;
+        const remainingRounds = totalRounds - completedRounds;
+        const progressPct = totalRounds > 0 ? (completedRounds / totalRounds * 100) : 0;
 
-  // 완료 케이스
-  if (remainingRounds <= 0) {
-    document.getElementById('dca-content').innerHTML = `
+        // 완료 케이스
+        if (remainingRounds <= 0) {
+            document.getElementById('dca-content').innerHTML = `
       <div class="info-box" style="border-left-color:var(--green);margin-top:8px;">
         <strong>분할매수 완료</strong><br>
         ${totalRounds}회 분할매수를 모두 완료했습니다. 이후 연간 납입 시 목표 대비 낮은 ETF에 우선 배분하세요.
       </div>`;
-    return;
-  }
+            return;
+        }
 
-  // 계좌별 매수·매도 통합 계획 계산
-  let grandTotalBuyGap = 0;
-  let grandTotalSellGap = 0;
-  const accPlans = ACCOUNTS.map(acc => {
-    const accountTotal = acc.holdings.reduce((s, h) => s + h.defaultAmt, 0);
-    const items = [];
-    acc.holdings.forEach(h => {
-      const targetAmt = accountTotal * h.targetPct / 100;
-      const gap = targetAmt - h.defaultAmt; // 양수=매수필요, 음수=매도필요
-      if (Math.abs(gap) > 0.5) {
-        items.push({ etf: h.etf, targetAmt, currentAmt: h.defaultAmt, gap, perRound: gap / remainingRounds });
-      }
-    });
-    // 매수 먼저, 그 다음 매도 순으로 정렬
-    items.sort((a, b) => b.gap - a.gap);
-    const buyPerRound = items.filter(x => x.gap > 0).reduce((s, x) => s + x.perRound, 0);
-    const sellPerRound = items.filter(x => x.gap < 0).reduce((s, x) => s + Math.abs(x.perRound), 0);
-    grandTotalBuyGap += items.filter(x => x.gap > 0).reduce((s, x) => s + x.gap, 0);
-    grandTotalSellGap += items.filter(x => x.gap < 0).reduce((s, x) => s + Math.abs(x.gap), 0);
-    return { acc, items, buyPerRound, sellPerRound };
-  }).filter(p => p.items.length > 0);
+        // 계좌별 매수·매도 통합 계획 계산
+        let grandTotalBuyGap = 0;
+        let grandTotalSellGap = 0;
+        const accPlans = ACCOUNTS.map(acc => {
+            const accountTotal = acc.holdings.reduce((s, h) => s + h.defaultAmt, 0);
+            const items = [];
+            acc.holdings.forEach(h => {
+                const targetAmt = accountTotal * h.targetPct / 100;
+                const gap = targetAmt - h.defaultAmt; // 양수=매수필요, 음수=매도필요
+                if (Math.abs(gap) > 0.5) {
+                    items.push({etf: h.etf, targetAmt, currentAmt: h.defaultAmt, gap, perRound: gap / remainingRounds});
+                }
+            });
+            // 매수 먼저, 그 다음 매도 순으로 정렬
+            items.sort((a, b) => b.gap - a.gap);
+            const buyPerRound = items.filter(x => x.gap > 0).reduce((s, x) => s + x.perRound, 0);
+            const sellPerRound = items.filter(x => x.gap < 0).reduce((s, x) => s + Math.abs(x.perRound), 0);
+            grandTotalBuyGap += items.filter(x => x.gap > 0).reduce((s, x) => s + x.gap, 0);
+            grandTotalSellGap += items.filter(x => x.gap < 0).reduce((s, x) => s + Math.abs(x.gap), 0);
+            return {acc, items, buyPerRound, sellPerRound};
+        }).filter(p => p.items.length > 0);
 
-  // 계좌별 통합 카드 HTML
-  const cardsHtml = accPlans.map(({ acc, items, buyPerRound, sellPerRound }) => {
-    const rowsHtml = items.map(item => {
-      const isBuy = item.gap > 0;
-      const actionColor = isBuy ? 'var(--gold)' : 'var(--red)';
-      const actionLabel = isBuy ? '매수' : '매도';
-      const gapAbs = Math.abs(item.gap);
-      const perRoundAbs = Math.abs(item.perRound);
-      const gapColor = isBuy ? 'var(--gold)' : 'var(--red)';
-      return `
+        // 계좌별 통합 카드 HTML
+        const cardsHtml = accPlans.map(({acc, items, buyPerRound, sellPerRound}) => {
+            const rowsHtml = items.map(item => {
+                const isBuy = item.gap > 0;
+                const actionColor = isBuy ? 'var(--gold)' : 'var(--red)';
+                const actionLabel = isBuy ? '매수' : '매도';
+                const gapAbs = Math.abs(item.gap);
+                const perRoundAbs = Math.abs(item.perRound);
+                const gapColor = isBuy ? 'var(--gold)' : 'var(--red)';
+                return `
       <tr>
         <td><div class="etf-name">${item.etf}</div></td>
         <td class="pct-cell" style="color:var(--text-secondary)">${Math.round(item.targetAmt).toLocaleString('ko-KR')}만</td>
@@ -1843,13 +2139,13 @@ function renderDca() {
           <span style="font-size:10px;opacity:0.7;margin-right:2px;">${actionLabel}</span>${Math.round(perRoundAbs).toLocaleString('ko-KR')}만
         </td>
       </tr>`;
-    }).join('');
+            }).join('');
 
-    const summaryParts = [];
-    if (buyPerRound > 0.5) summaryParts.push(`<span style="color:var(--gold)">매수 ${Math.round(buyPerRound).toLocaleString('ko-KR')}만</span>`);
-    if (sellPerRound > 0.5) summaryParts.push(`<span style="color:var(--red)">매도 ${Math.round(sellPerRound).toLocaleString('ko-KR')}만</span>`);
+            const summaryParts = [];
+            if (buyPerRound > 0.5) summaryParts.push(`<span style="color:var(--gold)">매수 ${Math.round(buyPerRound).toLocaleString('ko-KR')}만</span>`);
+            if (sellPerRound > 0.5) summaryParts.push(`<span style="color:var(--red)">매도 ${Math.round(sellPerRound).toLocaleString('ko-KR')}만</span>`);
 
-    return `
+            return `
       <div class="contrib-card" style="margin-bottom:0">
         <div class="contrib-title">${acc.label} <span style="font-size:13px;color:var(--text-muted);font-weight:400">1회 ${summaryParts.join(' · ')}</span></div>
         <div class="table-wrap" style="margin-top:8px;">
@@ -1867,9 +2163,9 @@ function renderDca() {
           </table>
         </div>
       </div>`;
-  }).join('');
+        }).join('');
 
-  document.getElementById('dca-content').innerHTML = `
+        document.getElementById('dca-content').innerHTML = `
     <!-- 진행 현황 -->
     <div style="margin-bottom:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -1899,19 +2195,19 @@ function renderDca() {
     <div class="grid-2" style="margin-bottom:16px;">
       ${cardsHtml}
     </div>`;
-}
+    }
 
-// =============================================
-// INIT
-// =============================================
-function init() {
-  ACCOUNTS.forEach(acc => renderAccount(acc.id));
-  renderSummary();
-  renderDca();
-  updateLastUpdated();
-}
+    // =============================================
+    // INIT
+    // =============================================
+    function init() {
+        ACCOUNTS.forEach(acc => renderAccount(acc.id));
+        renderSummary();
+        renderDca();
+        updateLastUpdated();
+    }
 
-document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
