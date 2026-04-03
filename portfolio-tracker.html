@@ -967,11 +967,11 @@
         IRP 개인연금
         <span class="tab-amount" id="tab-amount-irp-personal"></span>
     </div>
-    <div class="nav-tab" data-panel="contrib" onclick="switchPanel('contrib')">
-        연간 기여금
-    </div>
     <div class="nav-tab" data-panel="dca" onclick="switchPanel('dca')">
         분할매수·매도 계획
+    </div>
+    <div class="nav-tab" data-panel="contrib" onclick="switchPanel('contrib')">
+        연간 기여금
     </div>
     <div class="nav-tab" data-panel="notes" onclick="switchPanel('notes')">
         투자 노트
@@ -1098,7 +1098,7 @@
                 <button class="btn btn-reset" onclick="resetAccount('isa')">↺ 기본값 복원</button>
             </div>
         </div>
-        <div class="info-box">내년 전액 매도 예정. 미국배당 다우존스 40%를 코어로 ISA 비과세 배당 혜택 극대화. 만기 후 → 새 ISA 2,000만 + 연금저축1 300만 + 부동산
+        <div class="info-box">내년 전액 매도 예정. 미국배당 다우존스 60%를 코어로 ISA 비과세 배당 혜택 극대화. 종합채권 20% + CD금리 20%로 안정성 확보. 만기 후 → 새 ISA 2,000만 + 연금저축1 300만 + 부동산
             준비 5,381만으로 분배.
         </div>
         <div class="table-wrap">
@@ -1129,7 +1129,7 @@
                 <div class="account-name">IRP 퇴직연금</div>
                 <div class="account-subtitle">
                     <span class="badge badge-irp">장기 / 공격</span>
-                    나스닥 코어 성장 — 안전자산 30% 의무 (종합채권)
+                    S&P500 + 선진국 베타 — 안전자산 30% 의무 (종합채권)
                 </div>
             </div>
             <div class="account-stats">
@@ -1141,9 +1141,8 @@
             </div>
         </div>
         <div class="irp-compliance" id="irp-retire-compliance"></div>
-        <div class="info-box">나스닥100 50%를 코어로 IT·성장주 장기 복리에 집중. PLUS 신흥국MSCI로 신흥국 분산, 차이나항셍테크로 중국 성장 위성 배치. KODEX
-            선진국(MSCI World)은 나스닥과 미국 70% 중복이므로 제외. 이직 시 단발 유입 → 재조정 최소화, 장기 방치형. 이직 입금 시 나스닥 고점이면 채권 비중을 일시 40%로 상향 후
-            단계적 환원 고려.
+        <div class="info-box">S&P500 50%를 코어로 미국 시장 베타 확보. KODEX MSCI선진국 20%로 미국 외 선진국 분산 추가. 안전자산 의무 30%는 종합채권으로 충당. 이직 시 단발
+            유입 → 재조정 최소화, 장기 방치형. S&P500 고점 시 채권 비중을 일시 40%로 상향 후 단계적 환원 고려.
         </div>
         <div class="table-wrap">
             <table>
@@ -1214,7 +1213,7 @@
                 <div class="account-name">연금저축펀드 1</div>
                 <div class="account-subtitle">
                     <span class="badge badge-pension">장기 / 공격</span>
-                    S&P500 + 중국 양대 코어 — 100% 주식
+                    나스닥 + 중국·AI + 인도 3각 코어 — 100% 주식
                 </div>
             </div>
             <div class="account-stats">
@@ -1225,8 +1224,8 @@
                 <button class="btn btn-reset" onclick="resetAccount('pension1')">↺ 기본값 복원</button>
             </div>
         </div>
-        <div class="info-box">안전자산 의무 없음. 100% 주식. 연간 600만원 납입 — S&P500 우선 배분, 하락 자산 위주 리밸런싱. 중국 리스크 상승 시 차이나항셍테크 → PLUS
-            신흥국MSCI(합성H) 전환 고려. 실질 중국 노출 약 29% 주의.
+        <div class="info-box">안전자산 의무 없음. 100% 주식. 연간 600만원 납입. 나스닥100(40%) 코어로 미국 성장주 집중. 차이나항셍테크(25%) + 차이나AI테크(10%)로 중국 알파,
+            인도니프티50(25%)으로 인도 성장 추구. 하락 자산 위주 리밸런싱. 실질 중국 노출 약 35% 주의.
         </div>
         <div class="table-wrap">
             <table>
@@ -1297,15 +1296,15 @@
         <div class="contrib-card">
             <div class="contrib-title">
                 연금저축펀드 1
-                <span class="badge badge-pension">S&P500 + 중국 + 신흥국</span>
+                <span class="badge badge-pension">나스닥 + 중국·AI + 인도</span>
             </div>
             <div class="contrib-amount">연간 +600만원</div>
-            <div class="contrib-note">하락 자산 위주 배분으로 자동 리밸런싱. 중국 리스크 상승 시 차이나 → 신흥국 전환 고려.</div>
+            <div class="contrib-note">하락 자산 위주 배분으로 자동 리밸런싱. 중국 리스크 상승 시 차이나 비중 축소 후 인도·나스닥 확대 고려.</div>
             <div class="contrib-etfs">
                 <div class="contrib-etf-row">
                     <div>
-                        <div class="contrib-etf-name">KODEX 미국S&P500</div>
-                        <div class="contrib-etf-reason">미국 코어 50% — 가장 큰 비중, 우선 확보</div>
+                        <div class="contrib-etf-name">KODEX 미국나스닥100</div>
+                        <div class="contrib-etf-reason">미국 성장 코어 40% — 가장 큰 비중, 우선 확보</div>
                     </div>
                     <div>
                         <div class="contrib-etf-pct" style="color:var(--green)">우선 1순위</div>
@@ -1313,8 +1312,8 @@
                 </div>
                 <div class="contrib-etf-row">
                     <div>
-                        <div class="contrib-etf-name">TIGER MSCI신흥국</div>
-                        <div class="contrib-etf-reason">EM 분산 30% — 하락 시 집중 매수</div>
+                        <div class="contrib-etf-name">TIGER 차이나항셍테크</div>
+                        <div class="contrib-etf-reason">중국 코어 25% — 하락 시 집중 매수</div>
                     </div>
                     <div>
                         <div class="contrib-etf-pct" style="color:var(--amber)">2순위</div>
@@ -1322,8 +1321,17 @@
                 </div>
                 <div class="contrib-etf-row">
                     <div>
-                        <div class="contrib-etf-name">TIGER 차이나항셍테크</div>
-                        <div class="contrib-etf-reason">중국 코어 20% — 실질 노출 약 29% 주의</div>
+                        <div class="contrib-etf-name">TIGER 인도니프티50</div>
+                        <div class="contrib-etf-reason">인도 성장 25% — 중국 리스크 헤지 역할</div>
+                    </div>
+                    <div>
+                        <div class="contrib-etf-pct" style="color:var(--amber)">2순위</div>
+                    </div>
+                </div>
+                <div class="contrib-etf-row">
+                    <div>
+                        <div class="contrib-etf-name">KODEX 차이나AI테크액티브</div>
+                        <div class="contrib-etf-reason">중국 AI 위성 10% — 실질 중국 노출 약 35% 주의</div>
                     </div>
                     <div>
                         <div class="contrib-etf-pct" style="color:var(--text-muted)">3순위</div>
@@ -1398,11 +1406,11 @@
                 <span class="badge badge-isa">배당 인컴 코어</span>
             </div>
             <div class="contrib-amount">내년 전액 매도 후 → 새 ISA 2,000만원 재시작</div>
-            <div class="contrib-note">해지 후 구조: 미국배당 40% · CD금리 25% · 종합채권 20% · 금 15%. 만기 1~2개월 전 환율 모니터링.</div>
+            <div class="contrib-note">현재 구조: 미국배당 60% · 종합채권 20% · CD금리 20%. 만기 1~2개월 전 환율 모니터링.</div>
             <div class="contrib-etfs">
                 <div class="contrib-etf-row">
                     <div>
-                        <div class="contrib-etf-name">TIGER 미국배당 다우존스 40% + CD금리 25% + 종합채권 20% + KRX금 15%</div>
+                        <div class="contrib-etf-name">TIGER 미국배당 다우존스 60% + 종합채권 20% + CD금리 20%</div>
                         <div class="contrib-etf-reason">ISA 비과세 배당 혜택 극대화. 원화 강세 시 달러 자산 비중 조절 고려.</div>
                     </div>
                     <div>
@@ -1456,8 +1464,8 @@
                     <tbody>
                     <tr>
                         <td>IRP 퇴직연금</td>
-                        <td style="color:var(--text-secondary)">나스닥 코어</td>
-                        <td style="font-size:12px;color:var(--text-secondary)">나스닥 50% 단독 집중</td>
+                        <td style="color:var(--text-secondary)">선진국 베타</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">S&P500 50% + 선진국MSCI 20%</td>
                     </tr>
                     <tr>
                         <td>IRP 개인연금</td>
@@ -1466,8 +1474,8 @@
                     </tr>
                     <tr>
                         <td>연금저축펀드1</td>
-                        <td style="color:var(--text-secondary)">S&P500 + 중국</td>
-                        <td style="font-size:12px;color:var(--text-secondary)">미국·중국 양대 코어, 채권 0%</td>
+                        <td style="color:var(--text-secondary)">나스닥 + 중국·AI + 인도</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">나스닥·중국·인도 3각 코어, 채권 0%</td>
                     </tr>
                     <tr>
                         <td>연금저축펀드2</td>
@@ -1520,8 +1528,8 @@
 
             <div class="info-box" style="border-left-color:var(--red);margin-bottom:10px;">
                 <strong>③ 중국 리스크 편중</strong><br>
-                연금저축펀드1의 실질 중국 노출 <strong>~29%</strong> (차이나항셍테크 20% + PLUS신흥국 내포 ~9%). 미·중 갈등, 지정학 이슈 발생 시 동 계좌 집중 타격
-                가능. 연 600만 납입 시 차이나항셍테크 ↔ PLUS신흥국 비중으로 조절 권장.
+                연금저축펀드1의 실질 중국 노출 <strong>~35%</strong> (차이나항셍테크 25% + 차이나AI테크 10%). 미·중 갈등, 지정학 이슈 발생 시 동 계좌 집중 타격
+                가능. 리스크 상승 시 차이나 비중 축소 후 인도(니프티50) 또는 나스닥으로 대체 권장.
             </div>
 
             <div class="info-box" style="border-left-color:var(--text-muted);">
@@ -1548,7 +1556,7 @@
                     <tr>
                         <td><strong>IRP 퇴직연금</strong></td>
                         <td style="font-size:12px;color:var(--text-secondary)">연 1회 점검 / 이직 입금 시</td>
-                        <td style="font-size:12px;color:var(--text-secondary)">나스닥 급등 시 채권 40%로 일시 상향 후 단계적 환원</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">S&P500 고점 시 채권 40%로 일시 상향 후 단계적 환원</td>
                     </tr>
                     <tr>
                         <td><strong>IRP 개인연금</strong></td>
@@ -1558,9 +1566,7 @@
                     <tr>
                         <td><strong>연금저축펀드1</strong></td>
                         <td style="font-size:12px;color:var(--text-secondary)">연 600만 납입 시</td>
-                        <td style="font-size:12px;color:var(--text-secondary)">S&P500:차이나 비중 모니터링, 중국 리스크 시 PLUS신흥국으로
-                            전환
-                        </td>
+                        <td style="font-size:12px;color:var(--text-secondary)">나스닥:차이나:인도 비중 모니터링, 중국 리스크 시 차이나 비중 축소 후 인도·나스닥으로 대체</td>
                     </tr>
                     <tr>
                         <td><strong>연금저축펀드2</strong></td>
